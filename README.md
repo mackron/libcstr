@@ -25,92 +25,92 @@ Function List
 =============
 Standard Library Replacements
 -----------------------------
-cstr_strlen
-cstr_strcpy
-cstr_strcpy_s
-cstr_strncpy_s
-cstr_strcat_s
-cstr_strncat_s
+    cstr_strlen
+    cstr_strcpy
+    cstr_strcpy_s
+    cstr_strncpy_s
+    cstr_strcat_s
+    cstr_strncat_s
 
 Dynamic Strings
 ---------------
-cstr_alloc
-cstr_free
-cstr_newn
-cstr_new
-cstr_newv
-cstr_newf
-cstr_setn
-cstr_set
-cstr_catn
-cstr_cat
-cstr_len
-cstr_cap
+    cstr_alloc
+    cstr_free
+    cstr_newn
+    cstr_new
+    cstr_newv
+    cstr_newf
+    cstr_setn
+    cstr_set
+    cstr_catn
+    cstr_cat
+    cstr_len
+    cstr_cap
 
 Unicode Conversion
 ------------------
-cstr_utf8_to_utf16ne
-cstr_utf8_to_utf16le
-cstr_utf8_to_utf16be
-cstr_utf8_to_utf16
-cstr_utf8_to_utf32ne
-cstr_utf8_to_utf32le
-cstr_utf8_to_utf32be
-cstr_utf8_to_utf32
-cstr_utf16ne_to_utf8
-cstr_utf16le_to_utf8
-cstr_utf16be_to_utf8
-cstr_utf16_to_utf8
-cstr_utf16ne_to_utf32ne
-cstr_utf16le_to_utf32le
-cstr_utf16be_to_utf32be
-cstr_utf16_to_utf32
-cstr_utf32ne_to_utf8
-cstr_utf32le_to_utf8
-cstr_utf32be_to_utf8
-cstr_utf32_to_utf8
-cstr_utf32ne_to_utf16ne
-cstr_utf32le_to_utf16le
-cstr_utf32be_to_utf16be
-cstr_utf32_to_utf16
-
-cstr_utf8_to_utf16_len
-cstr_utf8_to_utf16ne_len
-cstr_utf8_to_utf16le_len
-cstr_utf8_to_utf16be_len
-cstr_utf8_to_utf32_len
-cstr_utf8_to_utf32ne_len
-cstr_utf8_to_utf32le_len
-cstr_utf8_to_utf32be_len
-cstr_utf16ne_to_utf8_len
-cstr_utf16le_to_utf8_len
-cstr_utf16be_to_utf8_len
-cstr_utf16_to_utf8_len
-cstr_utf16ne_to_utf32_len
-cstr_utf16le_to_utf32_len
-cstr_utf16be_to_utf32_len
-cstr_utf16ne_to_utf32ne_len
-cstr_utf16le_to_utf32le_len
-cstr_utf16be_to_utf32be_len
-cstr_utf16_to_utf32_len
-cstr_utf32ne_to_utf8_len
-cstr_utf32le_to_utf8_len
-cstr_utf32be_to_utf8_len
-cstr_utf32_to_utf8_len
-cstr_utf32ne_to_utf16_len
-cstr_utf32le_to_utf16_len
-cstr_utf32be_to_utf16_len
-cstr_utf32ne_to_utf16ne_len
-cstr_utf32le_to_utf16le_len
-cstr_utf32be_to_utf16be_len
-cstr_utf32_to_utf16_len
-
-cstr_swap_endian_utf16
-cstr_swap_endian_utf32
-cstr_has_utf8_bom
-cstr_has_utf16_bom
-cstr_has_utf32_bom
-cstr_is_utf16_bom_le
-cstr_is_utf16_bom_be
-cstr_is_utf32_bom_le
-cstr_is_utf32_bom_be
+    cstr_utf8_to_utf16ne
+    cstr_utf8_to_utf16le
+    cstr_utf8_to_utf16be
+    cstr_utf8_to_utf16
+    cstr_utf8_to_utf32ne
+    cstr_utf8_to_utf32le
+    cstr_utf8_to_utf32be
+    cstr_utf8_to_utf32
+    cstr_utf16ne_to_utf8
+    cstr_utf16le_to_utf8
+    cstr_utf16be_to_utf8
+    cstr_utf16_to_utf8
+    cstr_utf16ne_to_utf32ne
+    cstr_utf16le_to_utf32le
+    cstr_utf16be_to_utf32be
+    cstr_utf16_to_utf32
+    cstr_utf32ne_to_utf8
+    cstr_utf32le_to_utf8
+    cstr_utf32be_to_utf8
+    cstr_utf32_to_utf8
+    cstr_utf32ne_to_utf16ne
+    cstr_utf32le_to_utf16le
+    cstr_utf32be_to_utf16be
+    cstr_utf32_to_utf16
+    
+    cstr_utf8_to_utf16_len
+    cstr_utf8_to_utf16ne_len
+    cstr_utf8_to_utf16le_len
+    cstr_utf8_to_utf16be_len
+    cstr_utf8_to_utf32_len
+    cstr_utf8_to_utf32ne_len
+    cstr_utf8_to_utf32le_len
+    cstr_utf8_to_utf32be_len
+    cstr_utf16ne_to_utf8_len
+    cstr_utf16le_to_utf8_len
+    cstr_utf16be_to_utf8_len
+    cstr_utf16_to_utf8_len
+    cstr_utf16ne_to_utf32_len
+    cstr_utf16le_to_utf32_len
+    cstr_utf16be_to_utf32_len
+    cstr_utf16ne_to_utf32ne_len
+    cstr_utf16le_to_utf32le_len
+    cstr_utf16be_to_utf32be_len
+    cstr_utf16_to_utf32_len
+    cstr_utf32ne_to_utf8_len
+    cstr_utf32le_to_utf8_len
+    cstr_utf32be_to_utf8_len
+    cstr_utf32_to_utf8_len
+    cstr_utf32ne_to_utf16_len
+    cstr_utf32le_to_utf16_len
+    cstr_utf32be_to_utf16_len
+    cstr_utf32ne_to_utf16ne_len
+    cstr_utf32le_to_utf16le_len
+    cstr_utf32be_to_utf16be_len
+    cstr_utf32_to_utf16_len
+    
+    cstr_swap_endian_utf16
+    cstr_swap_endian_utf32
+    cstr_has_utf8_bom
+    cstr_has_utf16_bom
+    cstr_has_utf32_bom
+    cstr_is_utf16_bom_le
+    cstr_is_utf16_bom_be
+    cstr_is_utf32_bom_le
+    cstr_is_utf32_bom_be
