@@ -39,7 +39,7 @@ At the time of writing, this library is more focused on simplicity of implementa
 want to look at alternatives. Also, I'm only adding functionality as I need it so many things are likely missing.
 
 If you need more UTF-8 manipulation functionality, consider using utf8.h here: https://github.com/sheredom/utf8.h. This is single file, public domain and
-focused on UTF-8 with a much more complete library of functionality that what you'll find here.
+focused on UTF-8 with a much more complete library of functionality than what you'll find here.
 
 This library has no external dependencies and is public domain. If your region does not recognize public domain, you can alternatively use MIT-0. See the
 bottom of this file for license text.
@@ -303,8 +303,8 @@ The Unicode API is mainly intended for converting between UTF-8, UTF-16 and UTF-
 and endian swapping.
 
 The conversion API is flexible and should support the vast majority of use cases. It supports both null terminated and sized strings (sub-strings), with
-support for outting the number of basic code units that were generated on output and consumed on input. It also supports handling of byte-order-marks (BOM) in
-addition to detection of invalid code points with control over whether or not they should abort with an error, or be replaced with a replacement code point.
+support for outputting the number of basic code units that were generated on output and consumed on input. It also supports handling of byte-order-marks (BOM)
+in addition to detection of invalid code points with control over whether or not they should abort with an error, or be replaced with a replacement code point.
 
 Each of the conversion APIs also support the retrieval of the length of the output string by passing in NULL for the output buffer. This works in the same
 manner as `snprintf()`. In addition to this, explicit APIs exist for retrieving the output length for those who prefer the explicitness.
@@ -404,8 +404,8 @@ errno_t cstr_*_to_*([encoding-type]* pOutput, size_t outputCap, size_t* pOutputL
     
     If all you want to do is validate the input string, set the appropriate flags (last parameter - `flags`) and set both the output buffer (`pOutput`) and the
     output length (`pOutputLen`) to NULL. This will result in no output data and no output length, but will still return a value indicating whether or not the
-    input string is valid. In this case you'll usually want to set the `CSTR_ERROR_ON_INVALID_CODE_POINT` flag. The `pInputLenProcessed` can be used to
-    determine the location of the error within the input string.
+    input string is valid. In this case you'll usually want to set the `CSTR_ERROR_ON_INVALID_CODE_POINT` flag. The `pInputLenProcessed` parameter can be used
+    to determine the location of the error within the input string.
 
     If the `CSTR_ERROR_ON_INVALID_CODE_POINT` flag is set and the input string contains an invalid character, `CSTR_ECODEPOINT` will be returned. If the
     `CSTR_FORBID_BOM` flag is set and the string starts with a byte-order-mark, `CSTR_EBOM` will be returned. If an output buffer is specified and it's not
