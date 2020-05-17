@@ -1309,7 +1309,7 @@ static CSTR_INLINE cstr_bool32 cstr_is_valid_code_point(cstr_utf32 utf32)
     return utf32 <= CSTR_UNICODE_MAX_CODE_POINT && !cstr_is_cp_in_surrogate_pair_range(utf32);
 }
 
-CSTR_INLINE size_t cstr_utf32_cp_to_utf8_len(cstr_utf32 utf32)
+static CSTR_INLINE size_t cstr_utf32_cp_to_utf8_len(cstr_utf32 utf32)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1333,7 +1333,7 @@ CSTR_INLINE size_t cstr_utf32_cp_to_utf8_len(cstr_utf32 utf32)
     return 0; /* Invalid. */
 }
 
-CSTR_INLINE size_t cstr_utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUTF8, size_t utf8Cap)
+static CSTR_INLINE size_t cstr_utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUTF8, size_t utf8Cap)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1375,7 +1375,7 @@ CSTR_INLINE size_t cstr_utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUTF8, siz
     return 0;
 }
 
-CSTR_INLINE size_t cstr_utf32_cp_to_utf16_len(cstr_utf32 utf32)
+static CSTR_INLINE size_t cstr_utf32_cp_to_utf16_len(cstr_utf32 utf32)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1395,7 +1395,7 @@ CSTR_INLINE size_t cstr_utf32_cp_to_utf16_len(cstr_utf32 utf32)
 #endif
 }
 
-CSTR_INLINE size_t cstr_utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* pUTF16, size_t utf16Cap)
+static CSTR_INLINE size_t cstr_utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* pUTF16, size_t utf16Cap)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
