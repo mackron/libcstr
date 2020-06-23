@@ -150,6 +150,8 @@ typedef cstr_uint16 wchar_t;
 #include <stdarg.h> /* For va_list */
 #include <errno.h>  /* For errno_t */
 
+#define cstr_npos ((size_t)-1)
+
 CSTR_API size_t cstr_strlen(const char* src);
 CSTR_API char* cstr_strcpy(char* dst, const char* src);
 #ifndef CSTR_NO_MSVC_COMPAT
@@ -259,6 +261,18 @@ size_t cstr_cap(cstr str)
     Returns the capacity of the string in `char`s. This does not include the null terminator or the bytes required for the length and capacity pre-fixed data.
     Returns 0 if `str` is NULL.
 
+size_t cstr_find(const char* str, const char* other)
+    Finds a string within another string, returning it's offset. If the string cannot be found, cstr_npos is returned.
+
+cstr cstr_replace_range(cstr str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen)
+    Replaces a section of the specified string with a sub-string of another. Returns NULL if an error occurrs, otherwise the returned string should replace the
+    input string.
+
+cstr cstr_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines)
+    Replaces a section of the specified string based on a begin and end tag, for both the input and other strings. The replacement string can optionally be
+    wrapped around new line characters with keepTagsOnSeparateLines set to true. This will not replace the tags, and will include the tags of the other string.
+    Returns NULL if an error occurs, otherwise the returned string should replace the input string.
+
 **************************************************************************************************************************************************************/
 typedef cstr_utf8*  cstr8;
 typedef cstr_utf16* cstr16;
@@ -279,19 +293,25 @@ CSTR_API cstr8 cstr8_catn(cstr8 str, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther);
 CSTR_API size_t cstr8_len(cstr8 str);
 CSTR_API size_t cstr8_cap(cstr8 str);
+CSTR_API size_t cstr8_find(const char* str, const char* other);  /* Returns cstr_npos if string not found, otherwise returns offset in bytes. */
+CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen);
+CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines);
 
-#define cstr_alloc cstr8_alloc
-#define cstr_free  cstr8_free
-#define cstr_newn  cstr8_newn
-#define cstr_new   cstr8_new
-#define cstr_newv  cstr8_newv
-#define cstr_newf  cstr8_newf
-#define cstr_setn  cstr8_setn
-#define cstr_set   cstr8_set
-#define cstr_catn  cstr8_catn
-#define cstr_cat   cstr8_cat
-#define cstr_len   cstr8_len
-#define cstr_cap   cstr8_cap
+#define cstr_alloc                  cstr8_alloc
+#define cstr_free                   cstr8_free
+#define cstr_newn                   cstr8_newn
+#define cstr_new                    cstr8_new
+#define cstr_newv                   cstr8_newv
+#define cstr_newf                   cstr8_newf
+#define cstr_setn                   cstr8_setn
+#define cstr_set                    cstr8_set
+#define cstr_catn                   cstr8_catn
+#define cstr_cat                    cstr8_cat
+#define cstr_len                    cstr8_len
+#define cstr_cap                    cstr8_cap
+#define cstr_find                   cstr8_find
+#define cstr_replace_range          cstr8_replace_range
+#define cstr_replace_range_tagged   cstr8_replace_range_tagged
 #endif
 
 
@@ -1093,14 +1113,16 @@ CSTR_API cstr8 cstr8_newn(const char* pOther, size_t otherLen)
         return NULL;
     }
 
-    otherLen = cstr_strlen(pOther);
+    if (otherLen == (size_t)-1) {
+        otherLen = cstr_strlen(pOther);
+    }
 
     str = cstr8_alloc(otherLen);
     if (str == NULL) {
         return NULL;    /* Out of memory. */
     }
 
-    cstr_strcpy(str, pOther);   /* We've already calculated the length. No need for the added overhead of using the _s() version. */
+    cstr_strncpy_s(str, otherLen+1, pOther, otherLen);  /* We've already calculated the length. No need for the added overhead of using the _s() version. */
 
     cstr8_set_cap(str, otherLen);
     cstr8_set_len(str, otherLen);
@@ -1264,6 +1286,127 @@ CSTR_API size_t cstr8_cap(cstr8 str)
     }
 
     return cstr8_get_cap(str);
+}
+
+
+CSTR_API size_t cstr8_find(const char* str, const char* other)
+{
+    const char* result = strstr(str, other);
+    if (result == NULL) {
+        return cstr_npos;
+    }
+
+    return result - str;
+}
+
+static cstr8 cstr8_replace_range_ex(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen, const char* pOtherPrepend, const char* pOtherAppend)
+{
+    cstr8 newStr;
+
+    if (str == NULL || replaceOffset + replaceLen > cstr8_len(str)) {
+        return str;
+    }
+
+    if (replaceLen == 0) {
+        return str; /* Nothing to replace. */
+    }
+
+    /* We can allow pOther to be NULL in which case it can be the same as a remove. */
+    if (pOther == NULL) {
+        pOther = "";
+    }
+
+    if (otherLen == (size_t)-1) {
+        otherLen = cstr_strlen(pOther);
+    }
+
+    
+    /* The string is split into 3 sections: the part before the replace, the replacement itself, and the part after the replacement. */
+
+    /* Pre-replacement. */
+    newStr = cstr8_newn(str, replaceOffset);
+
+    /* Replacement. */
+    if (pOtherPrepend != NULL) { newStr = cstr8_cat(newStr, pOtherPrepend); }
+    newStr = cstr8_catn(newStr, pOther, otherLen);
+    if (pOtherAppend  != NULL) { newStr = cstr8_cat(newStr, pOtherAppend ); }
+
+    /* Post-replacement. */
+    newStr = cstr8_catn(newStr, str + (replaceOffset + replaceLen), cstr8_len(str) - (replaceOffset + replaceLen));
+
+    if (newStr == NULL) {
+        return NULL;
+    }
+
+    /* We're done. Only free the old string if we actually have a new string. */
+    cstr8_free(str);
+    return newStr;
+}
+
+CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLength, const char* pOther, size_t otherLength)
+{
+    return cstr8_replace_range_ex(str, replaceOffset, replaceLength, pOther, otherLength, NULL, NULL);
+}
+
+CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines)
+{
+    size_t strOffsetBeg;
+    size_t strOffsetEnd;
+    size_t otherOffsetBeg;
+    size_t otherOffsetEnd;
+    const char* pOtherNewLines = NULL;
+
+    if (str == NULL || pOther == NULL) {
+        return str;
+    }
+
+    if (pTagBeg == NULL || pTagBeg[0] == '\0') {
+        strOffsetBeg = 0;
+    } else {
+        strOffsetBeg = cstr8_find(str, pTagBeg);
+        if (strOffsetBeg == cstr_npos) {
+            return str; /* Could not find begin tag. */
+        } else {
+            strOffsetBeg += cstr_strlen(pTagBeg);   /* Don't want to replace the tag itself. */
+        }
+    }
+
+    if (pTagEnd == NULL || pTagEnd[0] == '\0') {
+        strOffsetEnd = cstr8_len(str);
+    } else {
+        strOffsetEnd = cstr8_find(str + strOffsetBeg, pTagEnd);
+        if (strOffsetEnd == cstr_npos) {
+            return str; /* Could not find end tag. */
+        } else {
+            strOffsetEnd += strOffsetBeg;   /* When we searched for the string we started from the end of the beginning tag. Need to normalize the end offset. */
+        }
+    }
+
+    if (pOtherTagBeg == NULL || pOtherTagBeg[0] == '\0') {
+        otherOffsetBeg = 0;
+    } else {
+        otherOffsetBeg = cstr8_find(pOther, pOtherTagBeg);
+        if (otherOffsetBeg == cstr_npos) {
+            return str; /* Could not find the begin tag in the other string. */
+        }
+    }
+
+    if (pOtherTagBeg == NULL || pOtherTagBeg[0] == '\0') {
+        otherOffsetEnd = cstr_strlen(pOther);
+    } else {
+        otherOffsetEnd = cstr8_find(pOther + otherOffsetBeg + cstr_strlen(pOtherTagBeg), pOtherTagEnd);
+        if (otherOffsetEnd == cstr_npos) {
+            return str; /* Could not find the end tag in the other string. */
+        } else {
+            otherOffsetEnd += otherOffsetBeg + cstr_strlen(pOtherTagBeg) + cstr_strlen(pOtherTagEnd);
+        }
+    }
+
+    if (keepTagsOnSeparateLines) {
+        pOtherNewLines = "\n";
+    }
+
+    return cstr8_replace_range_ex(str, strOffsetBeg, strOffsetEnd - strOffsetBeg, pOther + otherOffsetBeg, otherOffsetEnd - otherOffsetBeg, pOtherNewLines, pOtherNewLines);
 }
 #endif /* CSTR_NO_UTF8 */
 

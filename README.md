@@ -46,6 +46,9 @@ Dynamic Strings
     cstr_cat
     cstr_len
     cstr_cap
+    cstr_find
+    cstr_replace_range
+    cstr_replace_range_tagged
 
 Unicode Conversion
 ------------------
