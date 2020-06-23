@@ -264,6 +264,12 @@ size_t cstr_cap(cstr str)
 size_t cstr_find(const char* str, const char* other)
     Finds a string within another string, returning it's offset. If the string cannot be found, cstr_npos is returned.
 
+const char* cstr_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen)
+    Finds a substring containing only the section inside, and including, the specified tags.
+
+cstr cstr_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd)
+    Constructs a new string based on the substring returned by cstr_substr_tagged().
+
 cstr cstr_replace_range(cstr str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen)
     Replaces a section of the specified string with a sub-string of another. Returns NULL if an error occurrs, otherwise the returned string should replace the
     input string.
@@ -294,6 +300,8 @@ CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther);
 CSTR_API size_t cstr8_len(cstr8 str);
 CSTR_API size_t cstr8_cap(cstr8 str);
 CSTR_API size_t cstr8_find(const char* str, const char* other);  /* Returns cstr_npos if string not found, otherwise returns offset in bytes. */
+CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen);
+CSTR_API cstr8 cstr8_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd);
 CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines);
 
@@ -310,6 +318,8 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
 #define cstr_len                    cstr8_len
 #define cstr_cap                    cstr8_cap
 #define cstr_find                   cstr8_find
+#define cstr_substr_tagged          cstr8_substr_tagged
+#define cstr_new_substr_tagged      cstr8_new_substr_tagged
 #define cstr_replace_range          cstr8_replace_range
 #define cstr_replace_range_tagged   cstr8_replace_range_tagged
 #endif
@@ -1291,12 +1301,65 @@ CSTR_API size_t cstr8_cap(cstr8 str)
 
 CSTR_API size_t cstr8_find(const char* str, const char* other)
 {
-    const char* result = strstr(str, other);
+    const char* result;
+
+    if (str == NULL || other == NULL) {
+        return cstr_npos;
+    }
+
+    result = strstr(str, other);
     if (result == NULL) {
         return cstr_npos;
     }
 
     return result - str;
+}
+
+CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen)
+{
+    size_t offsetBeg;
+    size_t offsetEnd;
+
+    if (pLen != NULL) {
+        *pLen = 0;
+    }
+
+    if (pTagBeg == NULL || pTagBeg[0] == '\0') {
+        offsetBeg = 0;
+    } else {
+        offsetBeg = cstr8_find(str, pTagBeg);
+        if (offsetBeg == cstr_npos) {
+            return NULL; /* Could not find the begin tag in the other string. */
+        }
+    }
+
+    if (pTagEnd == NULL || pTagEnd[0] == '\0') {
+        offsetEnd = cstr_strlen(str);
+    } else {
+        offsetEnd = cstr8_find(str + offsetBeg + cstr_strlen(pTagBeg), pTagEnd);
+        if (offsetEnd == cstr_npos) {
+            return NULL; /* Could not find the end tag in the other string. */
+        } else {
+            offsetEnd += offsetBeg + cstr_strlen(pTagBeg) + cstr_strlen(pTagEnd);
+        }
+    }
+
+    if (pLen != NULL) {
+        *pLen = (offsetEnd - offsetBeg);
+    }
+
+    return str + offsetBeg;
+}
+
+CSTR_API cstr8 cstr8_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd)
+{
+    size_t len;
+    str = cstr8_substr_tagged(str, pTagBeg, pTagEnd, &len);
+    if (str == NULL) {
+        return NULL;
+    }
+
+    return cstr8_newn(str, len);
 }
 
 static cstr8 cstr8_replace_range_ex(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen, const char* pOtherPrepend, const char* pOtherAppend)
@@ -1352,8 +1415,8 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
 {
     size_t strOffsetBeg;
     size_t strOffsetEnd;
-    size_t otherOffsetBeg;
-    size_t otherOffsetEnd;
+    size_t otherSubstrLen;
+    const char* pOtherSubstr;
     const char* pOtherNewLines = NULL;
 
     if (str == NULL || pOther == NULL) {
@@ -1382,31 +1445,16 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
         }
     }
 
-    if (pOtherTagBeg == NULL || pOtherTagBeg[0] == '\0') {
-        otherOffsetBeg = 0;
-    } else {
-        otherOffsetBeg = cstr8_find(pOther, pOtherTagBeg);
-        if (otherOffsetBeg == cstr_npos) {
-            return str; /* Could not find the begin tag in the other string. */
-        }
-    }
-
-    if (pOtherTagBeg == NULL || pOtherTagBeg[0] == '\0') {
-        otherOffsetEnd = cstr_strlen(pOther);
-    } else {
-        otherOffsetEnd = cstr8_find(pOther + otherOffsetBeg + cstr_strlen(pOtherTagBeg), pOtherTagEnd);
-        if (otherOffsetEnd == cstr_npos) {
-            return str; /* Could not find the end tag in the other string. */
-        } else {
-            otherOffsetEnd += otherOffsetBeg + cstr_strlen(pOtherTagBeg) + cstr_strlen(pOtherTagEnd);
-        }
+    pOtherSubstr = cstr8_substr_tagged(pOther, pOtherTagBeg, pOtherTagEnd, &otherSubstrLen);
+    if (pOtherSubstr == NULL) {
+        return str; /* Failed to retrieve the substring of the other string. */
     }
 
     if (keepTagsOnSeparateLines) {
         pOtherNewLines = "\n";
     }
 
-    return cstr8_replace_range_ex(str, strOffsetBeg, strOffsetEnd - strOffsetBeg, pOther + otherOffsetBeg, otherOffsetEnd - otherOffsetBeg, pOtherNewLines, pOtherNewLines);
+    return cstr8_replace_range_ex(str, strOffsetBeg, strOffsetEnd - strOffsetBeg, pOtherSubstr, otherSubstrLen, pOtherNewLines, pOtherNewLines);
 }
 #endif /* CSTR_NO_UTF8 */
 
