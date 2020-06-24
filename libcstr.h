@@ -597,6 +597,31 @@ CSTR_API errno_t cstr_utf32be_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, si
 CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
 
 
+/**************************************************************************************************************************************************************
+
+Utilities
+
+**************************************************************************************************************************************************************/
+#define cstr_is_null_or_empty(str) ((str) == NULL || (str)[0] == 0)
+
+/* UTF-32 */
+CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len);
+
+/* UTF-16 */
+
+/* UTF-8 */
+CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen);
+
+/* Default Wrappers (UTF-8) */
+static CSTR_INLINE cstr_bool32 cstr_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_is_null_or_whitespace(pUTF8, utf8Len); }
+static CSTR_INLINE size_t cstr_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_ltrim_offset(pUTF8, utf8Len); }
+static CSTR_INLINE size_t cstr_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_rtrim_offset(pUTF8, utf8Len); }
+static CSTR_INLINE size_t cstr_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen) { return cstr_utf8_next_line(pUTF8, pThisLineLen); }
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -1251,6 +1276,10 @@ CSTR_API cstr8 cstr8_catn(cstr8 str, const char* pOther, size_t otherLen)
     } else {
         size_t cap = cstr8_get_cap(str);
         size_t len = cstr8_get_len(str);
+
+        if (otherLen == (size_t)-1) {
+            otherLen = cstr_strlen(pOther);
+        }
 
         if (cap < len + otherLen) {
             cap = len + otherLen;
@@ -2179,7 +2208,6 @@ CSTR_API errno_t cstr_utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_
 
     return CSTR_SUCCESS;
 }
-
 
 CSTR_API errno_t cstr_utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
@@ -4277,6 +4305,215 @@ CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t
 
     /* Getting here means there was no BOM, so assume native endian. */
     return cstr_utf32ne_to_utf16ne(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, pUTF32LenProcessed, flags);
+}
+
+
+
+/**************************************************************************************************************************************************************
+
+Utilities
+
+**************************************************************************************************************************************************************/
+CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len)
+{
+    if (pUTF32 == NULL) {
+        return CSTR_TRUE;
+    }
+
+    while (pUTF32[0] != 0 && utf32Len > 0) {
+        cstr_utf32 cp = pUTF32[0];
+
+        pUTF32   += 1;
+        utf32Len -= 1;
+        
+        if (cp >= 0x09 && cp <= 0x0D) {
+            continue;
+        }
+
+        if (cp >= 0x2000 && cp <= 0x200A) {
+            continue;
+        }
+
+        switch (cp) {
+            case 0x0020:
+            case 0x0085:
+            case 0x00A0:
+            case 0x1680:
+            case 0x2028:
+            case 0x2029:
+            case 0x202F:
+            case 0x205F:
+            case 0x3000:
+                continue;
+
+            default:
+                return CSTR_FALSE;
+        }
+    }
+
+    /* Getting here means we reached the end of the string without finding anything other than whitespace which means the string is entire whitespace. */
+    return CSTR_TRUE;
+}
+
+CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len)
+{
+    if (pUTF8 == NULL) {
+        return CSTR_TRUE;
+    }
+
+    /* This could be faster, but it's practical. */
+
+    while (pUTF8[0] != '\0' && utf8Len > 0) {
+        cstr_utf32 utf32;
+        size_t utf8Processed;
+        int err;
+
+        /* We expect ENOMEM to be returned, but we should still have a valid utf32 character. */
+        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        if (err != 0 && err != ENOMEM) {
+            break;
+        }
+
+        if (utf8Processed == 0) {
+            break;
+        }
+
+        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+            return CSTR_FALSE;
+        }
+
+        pUTF8   += utf8Processed;
+        utf8Len -= utf8Processed;
+    }
+
+    return CSTR_TRUE;
+}
+
+
+CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
+{
+    size_t utf8RunningOffset = 0;
+
+    while (pUTF8[0] != '\0' && utf8Len > 0) {
+        cstr_utf32 utf32;
+        size_t utf8Processed;
+        int err;
+
+        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        if (err != 0 && err != ENOMEM) {
+            break;
+        }
+
+        if (utf8Processed == 0) {
+            break;
+        }
+
+        utf8RunningOffset += utf8Processed;
+
+        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+            break;
+        }
+
+        pUTF8   += utf8Processed;
+        utf8Len -= utf8Processed;
+    }
+
+    return utf8RunningOffset;
+}
+
+CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
+{
+    size_t utf8RunningOffset = 0;
+    size_t utf8LastNonWhitespaceOffset = utf8Len;
+
+    if (pUTF8 == NULL) {
+        return cstr_npos;
+    }
+
+    for (;;) {
+        cstr_utf32 utf32;
+        size_t utf8Processed;
+        int err;
+
+        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        if (err != 0 && err != ENOMEM) {
+            break;
+        }
+
+        if (utf8Processed == 0) {
+            break;
+        }
+
+        utf8RunningOffset += utf8Processed;
+
+        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+            utf8LastNonWhitespaceOffset = utf8RunningOffset;
+        }
+
+        pUTF8   += utf8Processed;
+        utf8Len -= utf8Processed;
+    }
+
+    return utf8LastNonWhitespaceOffset;
+}
+
+CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen)
+{
+    size_t thisLen = 0;
+    size_t nextBeg = 0;
+
+    if (pThisLineLen == NULL) {
+        *pThisLineLen = 0;
+    }
+
+    if (pUTF8 == NULL) {
+        return cstr_npos;
+    }
+
+    for (;;) {
+        if (pUTF8[thisLen] == '\0') {
+            nextBeg = cstr_npos;
+            break;  /* Reached the end. */
+        }
+
+        /*
+        The following cases need to be handled:
+            \n
+            \r\n
+            U+0085 (0xC2 0x85)      - Next Line
+            U+2028 (0xE2 0x80 0xA8) - Line Separator
+            U+2029 (0xE2 0x80 0xA9) - Paragraph Separator
+        */
+        if (pUTF8[thisLen] == '\n') {
+            nextBeg = thisLen + 1;
+            break;
+        }
+        if (pUTF8[thisLen] == '\r' && pUTF8[thisLen+1] == '\n') {
+            nextBeg = thisLen + 2;
+            break;
+        }
+        if ((cstr_uint8)pUTF8[thisLen] == 0xC2 && (cstr_uint8)pUTF8[thisLen+1] == 0x85) {
+            nextBeg = thisLen + 2;
+            break;
+        }
+        if ((cstr_uint8)pUTF8[thisLen] == 0xE2 && (cstr_uint8)pUTF8[thisLen+1] == 0x80 && (cstr_uint8)pUTF8[thisLen+2] == 0xA8) {
+            nextBeg = thisLen + 3;
+            break;
+        }
+        if ((cstr_uint8)pUTF8[thisLen] == 0xE2 && (cstr_uint8)pUTF8[thisLen+1] == 0x80 && (cstr_uint8)pUTF8[thisLen+2] == 0xA9) {
+            nextBeg = thisLen + 3;
+            break;
+        }
+
+        /* Getting here means the new line character was not found. */
+        thisLen += 1;
+    }
+
+    if (pThisLineLen != NULL) {
+        *pThisLineLen = thisLen;
+    }
+
+    return nextBeg;
 }
 #endif /* LIBCSTR_IMPLEMENTATION */
 
