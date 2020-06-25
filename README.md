@@ -47,6 +47,7 @@ Dynamic Strings
     cstr_len
     cstr_cap
     cstr_find
+    cstr_find_last
     cstr_substr_tagged
     cstr_new_substr_tagged
     cstr_replace_range

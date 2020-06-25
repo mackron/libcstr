@@ -300,6 +300,7 @@ CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther);
 CSTR_API size_t cstr8_len(cstr8 str);
 CSTR_API size_t cstr8_cap(cstr8 str);
 CSTR_API size_t cstr8_find(const char* str, const char* other);  /* Returns cstr_npos if string not found, otherwise returns offset in bytes. */
+CSTR_API size_t cstr8_find_last(const char* str, const char* other);
 CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen);
 CSTR_API cstr8 cstr8_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd);
 CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen);
@@ -318,6 +319,7 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
 #define cstr_len                    cstr8_len
 #define cstr_cap                    cstr8_cap
 #define cstr_find                   cstr8_find
+#define cstr_find_last              cstr8_find_last
 #define cstr_substr_tagged          cstr8_substr_tagged
 #define cstr_new_substr_tagged      cstr8_new_substr_tagged
 #define cstr_replace_range          cstr8_replace_range
@@ -1342,6 +1344,35 @@ CSTR_API size_t cstr8_find(const char* str, const char* other)
     }
 
     return result - str;
+}
+
+CSTR_API size_t cstr8_find_last(const char* str, const char* other)
+{
+    size_t last = cstr_npos;
+    size_t runningOffset = 0;
+    size_t otherLen;
+
+    if (str == NULL || other == NULL) {
+        return cstr_npos;
+    }
+
+    otherLen = cstr_strlen(other);
+    if (otherLen == 0) {
+        return cstr_npos;   /* Trying to find an empty string. */
+    }
+
+    for (;;) {
+        size_t next = cstr8_find(str + runningOffset, other);
+        if (next == cstr_npos) {
+            break;  /* Didn't find any new occurances. */
+        }
+
+        last = runningOffset + next;
+
+        runningOffset += next + otherLen;
+    }
+
+    return last;
 }
 
 CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen)
