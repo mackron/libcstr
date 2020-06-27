@@ -629,7 +629,17 @@ static CSTR_INLINE size_t cstr_next_line(const cstr_utf8* pUTF8, size_t* pThisLi
 #endif
 #endif  /* libcstr_h */
 
+
+/************************************************************************************************************************************************************
+*************************************************************************************************************************************************************
+
+IMPLEMENTATION
+
+*************************************************************************************************************************************************************
+************************************************************************************************************************************************************/
 #if defined(LIBCSTR_IMPLEMENTATION)
+#ifndef libcstr_c
+#define libcstr_h
 
 /* CPU Architecture */
 #if defined(__x86_64__) || defined(_M_X64)
@@ -4546,7 +4556,9 @@ CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen
 
     return nextBeg;
 }
-#endif /* LIBCSTR_IMPLEMENTATION */
+
+#endif  /* libcstr_c */
+#endif  /* LIBCSTR_IMPLEMENTATION */
 
 /*
 This software is available as a choice of the following licenses. Choose
