@@ -5,12 +5,12 @@ converting between different endians. Swapping endians can be done separately.
 I've built this to service my own requirements, but if there's something you might find useful let me know and I'll
 consider adding support (no guarantees). I have plans for the following APIs:
 
-    cstr_sprintf()
-    cstr_vsprintf()
-    cstr_snprintf()
-    cstr_vsnprintf()
-    cstr_strcasecmp()
-    cstr_strncasecmp()
+    utf8_sprintf()
+    utf8_vsprintf()
+    utf8_snprintf()
+    utf8_vsnprintf()
+    utf8_strcasecmp()
+    utf8_strncasecmp()
     
 Documentation can be found in libcstr.h. It's a single file library, but there's a libcstr.c file for those who
 prefer separate .h and .c files.
@@ -25,12 +25,13 @@ Function List
 =============
 Standard Library Replacements
 -----------------------------
-    cstr_strlen
-    cstr_strcpy
-    cstr_strcpy_s
-    cstr_strncpy_s
-    cstr_strcat_s
-    cstr_strncat_s
+    utf8_strlen
+    utf8_strcpy
+    utf8_strcpy_s
+    utf8_strncpy_s
+    utf8_strcat_s
+    utf8_strncat_s
+    utf8_atoi_s
 
 Dynamic Strings
 ---------------

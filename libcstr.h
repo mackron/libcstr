@@ -21,12 +21,13 @@ The library is made up of three main parts:
        situations, however modern versions of MSVC will always throw a warning regardless. In this case, it may be convenient to use a custom implementation
        to silence the warning. In addition, some safe versions (`_s()`) may not be available on all compilers, so libcstr implements some of these as well.
 
-         * strlen()    -> cstr_strlen()
-         * strcpy()    -> cstr_strcpy()
-         * strcpy_s()  -> cstr_strcpy_s()
-         * strncpy_s() -> cstr_strncpy_s()
-         * strcat_s()  -> cstr_strcat_s()
-         * strncat_s() -> cstr_strncat_s()
+         * strlen()    -> utf8_strlen()
+         * strcpy()    -> utf8_strcpy()
+         * strcpy_s()  -> utf8_strcpy_s()
+         * strncpy_s() -> utf8_strncpy_s()
+         * strcat_s()  -> utf8_strcat_s()
+         * strncat_s() -> utf8_strncat_s()
+         * atoi_s()    -> utf8_atoi_s()
 
     2) Dynamically allocated strings via the `cstr` type. These are null terminated and compatible with `char*` and `const char*` strings, but also include
        some prefixed data containing the length of the string and the capacity of the internal buffer. See the documentation in the Dynamic Strings section
@@ -158,22 +159,19 @@ typedef cstr_uint32 cstr_utf32;
 #define cstr_npos ((size_t)-1)
 
 CSTR_API size_t utf8_strlen(const cstr_utf8* src);      /* Returns the number of bytes, *not* the number of the Unicode code points. */
+CSTR_API cstr_utf8* utf8_strcpy(cstr_utf8* dst, const cstr_utf8* src);
+CSTR_API int utf8_strcpy_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src);
+CSTR_API int utf8_strncpy_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src, size_t count);
+CSTR_API int utf8_strcat_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src);
+CSTR_API int utf8_strncat_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src, size_t count);
+CSTR_API int utf8_itoa_s(int value, cstr_utf8* dst, size_t dstCap, int radix);
+/*
+CSTR_API int utf8_snprintf(cstr_utf8* dst, size_t dstCap, const cstr_utf8* fmt, ...);
+CSTR_API int utf8_vsnprintf(cstr_utf8* dst, size_t dstCap, const cstr_utf8* fmt, va_list args);
+*/
+
 CSTR_API size_t utf16_strlen(const cstr_utf16* src);    /* Returns the number of shorts, *not* the number of the Unicode code points. */
 CSTR_API size_t utf32_strlen(const cstr_utf32* src);    /* Returns the number of ints, *not* the number of the Unicode code points. */
-
-CSTR_API size_t cstr_strlen(const char* src);   /* Returns the number of bytes, *not* the number of the Unicode code points. */
-CSTR_API char* cstr_strcpy(char* dst, const char* src);
-#ifndef CSTR_NO_MSVC_COMPAT
-CSTR_API int cstr_strcpy_s(char* dst, size_t dstCap, const char* src);
-CSTR_API int cstr_strncpy_s(char* dst, size_t dstCap, const char* src, size_t count);
-CSTR_API int cstr_strcat_s(char* dst, size_t dstCap, const char* src);
-CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t count);
-CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstCap, int radix);
-#endif
-/*
-CSTR_API int cstr_snprintf(char* dst, size_t dstCap, const char* fmt, ...);
-CSTR_API int cstr_vsnprintf(char* dst, size_t dstCap, const char* fmt, va_list args);
-*/
 
 
 /**************************************************************************************************************************************************************
@@ -876,43 +874,7 @@ CSTR_API size_t utf8_strlen(const cstr_utf8* src)
     return end - src;
 }
 
-CSTR_API size_t utf16_strlen(const cstr_utf16* src)
-{
-    const cstr_utf16* end;
-
-    CSTR_ASSERT(src != NULL);
-    
-    end = src;
-    while (end[0] != '\0') {
-        end += 1;
-    }
-
-    return end - src;
-}
-
-CSTR_API size_t utf32_strlen(const cstr_utf32* src)
-{
-    const cstr_utf32* end;
-
-    CSTR_ASSERT(src != NULL);
-    
-    end = src;
-    while (end[0] != '\0') {
-        end += 1;
-    }
-
-    return end - src;
-}
-
-
-
-
-CSTR_API size_t cstr_strlen(const char* src)
-{
-    return utf8_strlen(src);
-}
-
-CSTR_API char* cstr_strcpy(char* dst, const char* src)
+CSTR_API cstr_utf8* utf8_strcpy(cstr_utf8* dst, const cstr_utf8* src)
 {
     char* dstorig;
 
@@ -935,8 +897,7 @@ CSTR_API char* cstr_strcpy(char* dst, const char* src)
     return dstorig;
 }
 
-#ifndef CSTR_NO_MSVC_COMPAT
-CSTR_API int cstr_strcpy_s(char* dst, size_t dstCap, const char* src)
+CSTR_API int utf8_strcpy_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src)
 {
     size_t i;
 
@@ -964,7 +925,7 @@ CSTR_API int cstr_strcpy_s(char* dst, size_t dstCap, const char* src)
     return ERANGE;
 }
 
-CSTR_API int cstr_strncpy_s(char* dst, size_t dstCap, const char* src, size_t count)
+CSTR_API int utf8_strncpy_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src, size_t count)
 {
     size_t maxcount;
     size_t i;
@@ -998,7 +959,7 @@ CSTR_API int cstr_strncpy_s(char* dst, size_t dstCap, const char* src, size_t co
     return ERANGE;
 }
 
-CSTR_API int cstr_strcat_s(char* dst, size_t dstCap, const char* src)
+CSTR_API int utf8_strcat_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src)
 {
     char* dstorig;
 
@@ -1039,7 +1000,7 @@ CSTR_API int cstr_strcat_s(char* dst, size_t dstCap, const char* src)
     return 0;
 }
 
-CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t count)
+CSTR_API int utf8_strncat_s(cstr_utf8* dst, size_t dstCap, const cstr_utf8* src, size_t count)
 {
     char* dstorig;
 
@@ -1084,7 +1045,7 @@ CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t co
     return 0;
 }
 
-CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstCap, int radix)
+CSTR_API int utf8_itoa_s(int value, cstr_utf8* dst, size_t dstCap, int radix)
 {
     int sign;
     unsigned int valueU;
@@ -1152,7 +1113,37 @@ CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstCap, int radix)
 
     return 0;
 }
-#endif  /* CSTR_NO_STD */
+
+
+CSTR_API size_t utf16_strlen(const cstr_utf16* src)
+{
+    const cstr_utf16* end;
+
+    CSTR_ASSERT(src != NULL);
+    
+    end = src;
+    while (end[0] != '\0') {
+        end += 1;
+    }
+
+    return end - src;
+}
+
+CSTR_API size_t utf32_strlen(const cstr_utf32* src)
+{
+    const cstr_utf32* end;
+
+    CSTR_ASSERT(src != NULL);
+    
+    end = src;
+    while (end[0] != '\0') {
+        end += 1;
+    }
+
+    return end - src;
+}
+
+
 
 
 #ifndef CSTR_NO_UTF8
@@ -1295,7 +1286,7 @@ CSTR_API cstr8 cstr8_newn(const char* pOther, size_t otherLen)
     }
 
     if (otherLen == (size_t)-1) {
-        otherLen = cstr_strlen(pOther);
+        otherLen = utf8_strlen(pOther);
     }
 
     str = cstr8_alloc(otherLen);
@@ -1303,7 +1294,7 @@ CSTR_API cstr8 cstr8_newn(const char* pOther, size_t otherLen)
         return NULL;    /* Out of memory. */
     }
 
-    cstr_strncpy_s(str, otherLen+1, pOther, otherLen);  /* We've already calculated the length. No need for the added overhead of using the _s() version. */
+    utf8_strncpy_s(str, otherLen+1, pOther, otherLen);  /* We've already calculated the length. No need for the added overhead of using the _s() version. */
 
     cstr8_set_cap(str, otherLen);
     cstr8_set_len(str, otherLen);
@@ -1317,7 +1308,7 @@ CSTR_API cstr8 cstr8_new(const char* pOther)
         return NULL;
     }
 
-    return cstr8_newn(pOther, cstr_strlen(pOther));
+    return cstr8_newn(pOther, utf8_strlen(pOther));
 }
 
 CSTR_API cstr8 cstr8_newv(const char* pFormat, va_list args)
@@ -1383,7 +1374,7 @@ CSTR_API cstr8 cstr8_setn(cstr8 str, const char* pOther, size_t otherLen)
         return cstr8_newn(pOther, otherLen);
     }  else {
         if (otherLen == (size_t)-1) {
-            otherLen = cstr_strlen(pOther);
+            otherLen = utf8_strlen(pOther);
         }
 
         if (str != pOther) {
@@ -1415,7 +1406,7 @@ CSTR_API cstr8 cstr8_set(cstr8 str, const char* pOther)
         pOther = "";
     }
 
-    return cstr8_setn(str, pOther, cstr_strlen(pOther));
+    return cstr8_setn(str, pOther, utf8_strlen(pOther));
 }
 
 
@@ -1432,7 +1423,7 @@ CSTR_API cstr8 cstr8_catn(cstr8 str, const char* pOther, size_t otherLen)
         size_t len = cstr8_get_len(str);
 
         if (otherLen == (size_t)-1) {
-            otherLen = cstr_strlen(pOther);
+            otherLen = utf8_strlen(pOther);
         }
 
         if (cap < len + otherLen) {
@@ -1458,7 +1449,7 @@ CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther)
         return str;
     }
 
-    return cstr8_catn(str, pOther, cstr_strlen(pOther));
+    return cstr8_catn(str, pOther, utf8_strlen(pOther));
 }
 
 
@@ -1496,11 +1487,11 @@ CSTR_API size_t cstr8_findn(const char* str, size_t strLen, const char* other, s
     }
 
     if (strLen == (size_t)-1) {
-        strLen = cstr_strlen(str);
+        strLen = utf8_strlen(str);
     }
 
     if (otherLen == (size_t)-1) {
-        otherLen = cstr_strlen(other);
+        otherLen = utf8_strlen(other);
     }
 
     if (strLen == 0 || otherLen == 0) {
@@ -1544,11 +1535,11 @@ CSTR_API size_t cstr8_findn_last(const char* str, size_t strLen, const char* oth
     }
 
     if (strLen == (size_t)-1) {
-        strLen = cstr_strlen(str);
+        strLen = utf8_strlen(str);
     }
 
     if (otherLen == (size_t)-1) {
-        otherLen = cstr_strlen(other);
+        otherLen = utf8_strlen(other);
     }
 
     if (strLen == 0 || otherLen == 0) {
@@ -1589,13 +1580,13 @@ CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, c
     }
 
     if (pTagEnd == NULL || pTagEnd[0] == '\0') {
-        offsetEnd = cstr_strlen(str);
+        offsetEnd = utf8_strlen(str);
     } else {
-        offsetEnd = cstr8_find(str + offsetBeg + cstr_strlen(pTagBeg), pTagEnd);
+        offsetEnd = cstr8_find(str + offsetBeg + utf8_strlen(pTagBeg), pTagEnd);
         if (offsetEnd == cstr_npos) {
             return NULL; /* Could not find the end tag in the other string. */
         } else {
-            offsetEnd += offsetBeg + cstr_strlen(pTagBeg) + cstr_strlen(pTagEnd);
+            offsetEnd += offsetBeg + utf8_strlen(pTagBeg) + utf8_strlen(pTagEnd);
         }
     }
 
@@ -1635,7 +1626,7 @@ static cstr8 cstr8_replace_range_ex(cstr8 str, size_t replaceOffset, size_t repl
     }
 
     if (otherLen == (size_t)-1) {
-        otherLen = cstr_strlen(pOther);
+        otherLen = utf8_strlen(pOther);
     }
 
     
@@ -1685,7 +1676,7 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
         if (strOffsetBeg == cstr_npos) {
             return str; /* Could not find begin tag. */
         } else {
-            strOffsetBeg += cstr_strlen(pTagBeg);   /* Don't want to replace the tag itself. */
+            strOffsetBeg += utf8_strlen(pTagBeg);   /* Don't want to replace the tag itself. */
         }
     }
 
