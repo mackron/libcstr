@@ -159,6 +159,7 @@ CSTR_API int cstr_strcpy_s(char* dst, size_t dstCap, const char* src);
 CSTR_API int cstr_strncpy_s(char* dst, size_t dstCap, const char* src, size_t count);
 CSTR_API int cstr_strcat_s(char* dst, size_t dstCap, const char* src);
 CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t count);
+CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix);
 #endif
 /*
 CSTR_API int cstr_snprintf(char* dst, size_t dstCap, const char* fmt, ...);
@@ -219,7 +220,12 @@ API Reference
 -------------
 cstr cstr_alloc(size_t len)
     Allocates memory for the new string, setting the capacity to `len`, the length to 0 and the content of the string to zero. Returns NULL if out of memory.
-    The returned object must be freed with `cstr_free()` after use.
+    The returned object must be freed with `cstr_free()` after use. You can use this with `cstr_setn()` to output the result of an arbitrary string operation
+    to the memory owned by a `cstr`. To do this like the following:
+
+        cstr str = cstr_alloc(strLen);      // Allocate memory
+        strcpy_s(str, strLen+1 otherStr);   // Perform a string operation
+        cstr_setn(str, str, strLen);        // Set the length of the string by calling cstr_setn() on the same string, passing in an explicit length.
 
 void cstr_free(cstr str)
     Frees a `cstr` string.
@@ -300,11 +306,16 @@ CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther);
 CSTR_API size_t cstr8_len(cstr8 str);
 CSTR_API size_t cstr8_cap(cstr8 str);
 CSTR_API size_t cstr8_find(const char* str, const char* other);  /* Returns cstr_npos if string not found, otherwise returns offset in bytes. */
+CSTR_API size_t cstr8_findn(const char* str, size_t strLen, const char* other, size_t otherLen);
 CSTR_API size_t cstr8_find_last(const char* str, const char* other);
+CSTR_API size_t cstr8_findn_last(const char* str, size_t strLen, const char* other, size_t otherLen);
 CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen);
 CSTR_API cstr8 cstr8_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd);
 CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines);
+CSTR_API cstr8 cstr8_new_trim(const char* pOther);
+CSTR_API cstr8 cstr8_newn_trim(const char* pOther, size_t otherLen);
+CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index);
 
 #define cstr_alloc                  cstr8_alloc
 #define cstr_free                   cstr8_free
@@ -319,11 +330,16 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
 #define cstr_len                    cstr8_len
 #define cstr_cap                    cstr8_cap
 #define cstr_find                   cstr8_find
+#define cstr_findn                  cstr8_findn
 #define cstr_find_last              cstr8_find_last
+#define cstr_findn_last             cstr8_findn_last
 #define cstr_substr_tagged          cstr8_substr_tagged
 #define cstr_new_substr_tagged      cstr8_new_substr_tagged
 #define cstr_replace_range          cstr8_replace_range
 #define cstr_replace_range_tagged   cstr8_replace_range_tagged
+#define cstr_new_trim               cstr8_new_trim;
+#define cstr_newn_trim              cstr8_newn_trim;
+#define cstr_remove_at              cstr8_remove_at;
 #endif
 
 
@@ -615,13 +631,13 @@ CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, 
 CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
 CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
 CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
-CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen);
+CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen);
 
 /* Default Wrappers (UTF-8) */
 static CSTR_INLINE cstr_bool32 cstr_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_is_null_or_whitespace(pUTF8, utf8Len); }
 static CSTR_INLINE size_t cstr_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_ltrim_offset(pUTF8, utf8Len); }
 static CSTR_INLINE size_t cstr_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_rtrim_offset(pUTF8, utf8Len); }
-static CSTR_INLINE size_t cstr_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen) { return cstr_utf8_next_line(pUTF8, pThisLineLen); }
+static CSTR_INLINE size_t cstr_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen) { return cstr_utf8_next_line(pUTF8, utf8Len, pThisLineLen); }
 
 
 #ifdef __cplusplus
@@ -699,8 +715,17 @@ IMPLEMENTATION
 
 #ifndef CSTR_COPY_MEMORY
 #include <string.h> /* For memcpy() */
-#define CSTR_COPY_MEMORY(dst, src, sz) memcpy((dst), (src), (sz))
+#define CSTR_COPY_MEMORY(dst, src, sz)  memcpy((dst), (src), (sz))
 #endif
+#ifndef CSTR_MOVE_MEMORY
+#include <string.h> /* For memmove() */
+#define CSTR_MOVE_MEMORY(dst, src, sz)  memmove((dst), (src), (sz))
+#endif
+#ifndef CSTR_ZERO_MEMORY
+#include <string.h> /* For memset() */
+#define CSTR_ZERO_MEMORY(dst, sz)       memset((dst), 0, (sz))
+#endif
+#define CSTR_ZERO_OBJECT(dst)           CSTR_ZERO_MEMORY((dst), sizeof(*(dst)))
 
 #define CSTR_COUNTOF(p) (sizeof(p) / sizeof((p)[0]))
 
@@ -1018,6 +1043,75 @@ CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t co
 
     return 0;
 }
+
+CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
+{
+    int sign;
+    unsigned int valueU;
+    char* dstEnd;
+
+    if (dst == NULL || dstSizeInBytes == 0) {
+        return EINVAL;
+    }
+    if (radix < 2 || radix > 36) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    sign = (value < 0 && radix == 10) ? -1 : 1;     // The negative sign is only used when the base is 10.
+
+    if (value < 0) {
+        valueU = -value;
+    } else {
+        valueU = value;
+    }
+
+    dstEnd = dst;
+    do
+    {
+        int remainder = valueU % radix;
+        if (remainder > 9) {
+            *dstEnd = (char)((remainder - 10) + 'a');
+        } else {
+            *dstEnd = (char)(remainder + '0');
+        }
+
+        dstEnd += 1;
+        dstSizeInBytes -= 1;
+        valueU /= radix;
+    } while (dstSizeInBytes > 0 && valueU > 0);
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    if (sign < 0) {
+        *dstEnd++ = '-';
+        dstSizeInBytes -= 1;
+    }
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    *dstEnd = '\0';
+
+
+    // At this point the string will be reversed.
+    dstEnd -= 1;
+    while (dst < dstEnd) {
+        char temp = *dst;
+        *dst = *dstEnd;
+        *dstEnd = temp;
+
+        dst += 1;
+        dstEnd -= 1;
+    }
+
+    return 0;
+}
 #endif  /* CSTR_NO_STD */
 
 
@@ -1248,19 +1342,27 @@ CSTR_API cstr8 cstr8_setn(cstr8 str, const char* pOther, size_t otherLen)
     if (str == NULL) {
         return cstr8_newn(pOther, otherLen);
     }  else {
-        size_t cap = cstr8_get_cap(str);
-
-        if (cap < otherLen) {
-            cap = otherLen;
-            str = cstr8_realloc(str, cap);
-            if (str == NULL) {
-                return NULL;    /* Out of memory. Return NULL. The caller can worry about memory management if it's important to them. */
-            }
+        if (otherLen == (size_t)-1) {
+            otherLen = cstr_strlen(pOther);
         }
 
-        CSTR_COPY_MEMORY(str, pOther, otherLen);
-        str[otherLen] = '\0';
+        if (str != pOther) {
+            size_t cap = cstr8_get_cap(str);
 
+            if (cap < otherLen) {
+                cap = otherLen;
+                str = cstr8_realloc(str, cap);
+                if (str == NULL) {
+                    return NULL;    /* Out of memory. Return NULL. The caller can worry about memory management if it's important to them. */
+                }
+            }
+
+            CSTR_COPY_MEMORY(str, pOther, otherLen);
+        } else {
+            /* str and pOther are the same string. No need for a data copy, but we do need to set the length (calculated at the top if pOther is null terminated). */
+        }
+        
+        str[otherLen] = '\0';
         cstr8_set_len(str, otherLen);
 
         return str;
@@ -1342,37 +1444,79 @@ CSTR_API size_t cstr8_cap(cstr8 str)
 
 CSTR_API size_t cstr8_find(const char* str, const char* other)
 {
-    const char* result;
+    return cstr8_findn(str, (size_t)-1, other, (size_t)-1);
+}
+
+CSTR_API size_t cstr8_findn(const char* str, size_t strLen, const char* other, size_t otherLen)
+{
+    size_t strOff;
 
     if (str == NULL || other == NULL) {
         return cstr_npos;
     }
 
-    result = strstr(str, other);
-    if (result == NULL) {
+    if (strLen == (size_t)-1) {
+        strLen = cstr_strlen(str);
+    }
+
+    if (otherLen == (size_t)-1) {
+        otherLen = cstr_strlen(other);
+    }
+
+    if (strLen == 0 || otherLen == 0) {
         return cstr_npos;
     }
 
-    return result - str;
+    strOff = 0;
+    while ((strLen - strOff) >= otherLen) {
+        cstr_bool32 found = CSTR_TRUE;
+        size_t i;
+        for (i = 0; i < otherLen; i += 1) {
+            if (str[strOff + i] != other[i]) {
+                found = CSTR_FALSE;
+                break;
+            }
+        }
+
+        if (found) {
+            return strOff;
+        }
+
+        strOff += 1;
+    }
+
+    /* Getting here means we didn't find the other string at all. */
+    return cstr_npos;
 }
 
 CSTR_API size_t cstr8_find_last(const char* str, const char* other)
 {
+    return cstr8_findn_last(str, (size_t)-1, other, (size_t)-1);
+}
+
+CSTR_API size_t cstr8_findn_last(const char* str, size_t strLen, const char* other, size_t otherLen)
+{
     size_t last = cstr_npos;
     size_t runningOffset = 0;
-    size_t otherLen;
 
     if (str == NULL || other == NULL) {
         return cstr_npos;
     }
 
-    otherLen = cstr_strlen(other);
-    if (otherLen == 0) {
-        return cstr_npos;   /* Trying to find an empty string. */
+    if (strLen == (size_t)-1) {
+        strLen = cstr_strlen(str);
+    }
+
+    if (otherLen == (size_t)-1) {
+        otherLen = cstr_strlen(other);
+    }
+
+    if (strLen == 0 || otherLen == 0) {
+        return cstr_npos;
     }
 
     for (;;) {
-        size_t next = cstr8_find(str + runningOffset, other);
+        size_t next = cstr8_findn(str + runningOffset, strLen - runningOffset, other, otherLen);
         if (next == cstr_npos) {
             break;  /* Didn't find any new occurances. */
         }
@@ -1384,6 +1528,7 @@ CSTR_API size_t cstr8_find_last(const char* str, const char* other)
 
     return last;
 }
+
 
 CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd, size_t* pLen)
 {
@@ -1525,6 +1670,46 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
     }
 
     return cstr8_replace_range_ex(str, strOffsetBeg, strOffsetEnd - strOffsetBeg, pOtherSubstr, otherSubstrLen, pOtherNewLines, pOtherNewLines);
+}
+
+CSTR_API cstr8 cstr8_new_trim(const char* pOther)
+{
+    if (pOther == NULL) {
+        return NULL;
+    }
+
+    return cstr8_newn_trim(pOther, (size_t)-1);
+}
+
+CSTR_API cstr8 cstr8_newn_trim(const char* pOther, size_t otherLen)
+{
+    size_t loff;
+    size_t roff;
+
+    if (pOther == NULL) {
+        return NULL;
+    }
+
+    loff = cstr_utf8_ltrim_offset(pOther, otherLen);
+    roff = cstr_utf8_rtrim_offset(pOther, otherLen);
+
+    return cstr_newn(pOther + loff, roff - loff);
+}
+
+CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    if (index >= cstr8_len(str)) {
+        return str; /* Out of bounds. */
+    }
+    
+    CSTR_MOVE_MEMORY(str + index, str + index + 1, cstr8_len(str) - index); /* This will also move the null terminator. */
+    cstr8_set_len(str, cstr8_len(str) - 1);
+    
+    return str;
 }
 #endif /* CSTR_NO_UTF8 */
 
@@ -4396,6 +4581,23 @@ CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, 
     return CSTR_TRUE;
 }
 
+CSTR_API cstr_bool32 cstr_utf32_is_newline(cstr_utf32 utf32)
+{
+    if (utf32 >= 0x0A && utf32 <= 0x0D) {
+        return CSTR_TRUE;
+    }
+
+    if (utf32 == 0x85) {
+        return CSTR_TRUE;
+    }
+
+    if (utf32 >= 0x2028 && utf32 <= 0x2029) {
+        return CSTR_TRUE;
+    }
+
+    return CSTR_FALSE;
+}
+
 CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len)
 {
     if (pUTF8 == NULL) {
@@ -4403,7 +4605,6 @@ CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, siz
     }
 
     /* This could be faster, but it's practical. */
-
     while (pUTF8[0] != '\0' && utf8Len > 0) {
         cstr_utf32 utf32;
         size_t utf8Processed;
@@ -4435,6 +4636,10 @@ CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
 {
     size_t utf8RunningOffset = 0;
 
+    if (pUTF8 == NULL) {
+        return cstr_npos;
+    }
+
     while (pUTF8[0] != '\0' && utf8Len > 0) {
         cstr_utf32 utf32;
         size_t utf8Processed;
@@ -4449,14 +4654,13 @@ CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
             break;
         }
 
-        utf8RunningOffset += utf8Processed;
-
         if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
             break;
         }
 
-        pUTF8   += utf8Processed;
-        utf8Len -= utf8Processed;
+        utf8RunningOffset += utf8Processed;
+        pUTF8             += utf8Processed;
+        utf8Len           -= utf8Processed;
     }
 
     return utf8RunningOffset;
@@ -4498,7 +4702,7 @@ CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
     return utf8LastNonWhitespaceOffset;
 }
 
-CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen)
+CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen)
 {
     size_t thisLen = 0;
     size_t nextBeg = 0;
@@ -4511,43 +4715,38 @@ CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t* pThisLineLen
         return cstr_npos;
     }
 
-    for (;;) {
-        if (pUTF8[thisLen] == '\0') {
-            nextBeg = cstr_npos;
-            break;  /* Reached the end. */
-        }
+    /* This could be faster, but it's practical. */
+    while (pUTF8[0] != '\0' && utf8Len > 0) {
+        cstr_utf32 utf32;
+        size_t utf8Processed;
+        int err;
 
-        /*
-        The following cases need to be handled:
-            \n
-            \r\n
-            U+0085 (0xC2 0x85)      - Next Line
-            U+2028 (0xE2 0x80 0xA8) - Line Separator
-            U+2029 (0xE2 0x80 0xA9) - Paragraph Separator
-        */
-        if (pUTF8[thisLen] == '\n') {
-            nextBeg = thisLen + 1;
-            break;
-        }
-        if (pUTF8[thisLen] == '\r' && pUTF8[thisLen+1] == '\n') {
-            nextBeg = thisLen + 2;
-            break;
-        }
-        if ((cstr_uint8)pUTF8[thisLen] == 0xC2 && (cstr_uint8)pUTF8[thisLen+1] == 0x85) {
-            nextBeg = thisLen + 2;
-            break;
-        }
-        if ((cstr_uint8)pUTF8[thisLen] == 0xE2 && (cstr_uint8)pUTF8[thisLen+1] == 0x80 && (cstr_uint8)pUTF8[thisLen+2] == 0xA8) {
-            nextBeg = thisLen + 3;
-            break;
-        }
-        if ((cstr_uint8)pUTF8[thisLen] == 0xE2 && (cstr_uint8)pUTF8[thisLen+1] == 0x80 && (cstr_uint8)pUTF8[thisLen+2] == 0xA9) {
-            nextBeg = thisLen + 3;
+        /* We expect ENOMEM to be returned, but we should still have a valid utf32 character. */
+        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        if (err != 0 && err != ENOMEM) {
             break;
         }
 
-        /* Getting here means the new line character was not found. */
-        thisLen += 1;
+        if (utf8Processed == 0) {
+            break;
+        }
+
+        nextBeg += utf8Processed;
+
+        if (cstr_utf32_is_newline(utf32) == CSTR_TRUE) {
+            /* Special case for \r\n. This needs to be treated as one line. The \r by itself should also be treated as a new line, however. */
+            if (utf8Len + utf8Processed > 0 && pUTF8[utf8Processed] == '\n') {
+                nextBeg += 1;
+            }
+
+            break;
+        }
+
+        CSTR_ASSERT(utf8Len >= utf8Processed);  /* If there wasn't enough data in the UTF-8 string, cstr_utf8_to_utf32() should have failed. */
+
+        thisLen += utf8Processed;
+        pUTF8   += utf8Processed;
+        utf8Len -= utf8Processed;
     }
 
     if (pThisLineLen != NULL) {
