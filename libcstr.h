@@ -142,6 +142,11 @@ typedef cstr_uint32   cstr_bool32;
 typedef cstr_uint16 wchar_t;
 #endif
 
+typedef char        cstr_utf8;
+typedef cstr_uint16 cstr_utf16;
+typedef cstr_uint32 cstr_utf32;
+
+
 /* Define NULL for some compilers. */
 #ifndef NULL
 #define NULL 0
@@ -152,24 +157,23 @@ typedef cstr_uint16 wchar_t;
 
 #define cstr_npos ((size_t)-1)
 
-CSTR_API size_t cstr_strlen(const char* src);
+CSTR_API size_t utf8_strlen(const cstr_utf8* src);      /* Returns the number of bytes, *not* the number of the Unicode code points. */
+CSTR_API size_t utf16_strlen(const cstr_utf16* src);    /* Returns the number of shorts, *not* the number of the Unicode code points. */
+CSTR_API size_t utf32_strlen(const cstr_utf32* src);    /* Returns the number of ints, *not* the number of the Unicode code points. */
+
+CSTR_API size_t cstr_strlen(const char* src);   /* Returns the number of bytes, *not* the number of the Unicode code points. */
 CSTR_API char* cstr_strcpy(char* dst, const char* src);
 #ifndef CSTR_NO_MSVC_COMPAT
 CSTR_API int cstr_strcpy_s(char* dst, size_t dstCap, const char* src);
 CSTR_API int cstr_strncpy_s(char* dst, size_t dstCap, const char* src, size_t count);
 CSTR_API int cstr_strcat_s(char* dst, size_t dstCap, const char* src);
 CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t count);
-CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix);
+CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstCap, int radix);
 #endif
 /*
 CSTR_API int cstr_snprintf(char* dst, size_t dstCap, const char* fmt, ...);
 CSTR_API int cstr_vsnprintf(char* dst, size_t dstCap, const char* fmt, va_list args);
 */
-
-
-typedef char        cstr_utf8;
-typedef cstr_uint16 cstr_utf16;
-typedef cstr_uint32 cstr_utf32;
 
 
 /**************************************************************************************************************************************************************
@@ -727,9 +731,9 @@ IMPLEMENTATION
 #endif
 #define CSTR_ZERO_OBJECT(dst)           CSTR_ZERO_MEMORY((dst), sizeof(*(dst)))
 
-#define CSTR_COUNTOF(p) (sizeof(p) / sizeof((p)[0]))
+#define CSTR_COUNTOF(p)                 (sizeof(p) / sizeof((p)[0]))
 
-#define CSTR_HEADER_SIZE_IN_BYTES   (sizeof(size_t) + sizeof(size_t))
+#define CSTR_HEADER_SIZE_IN_BYTES       (sizeof(size_t) + sizeof(size_t))
 
 
 static CSTR_INLINE cstr_bool32 cstr_is_little_endian()
@@ -858,9 +862,9 @@ static CSTR_INLINE cstr_uint32 cstr_host2le_32(cstr_uint32 n)
 }
 
 
-CSTR_API size_t cstr_strlen(const char* src)
+CSTR_API size_t utf8_strlen(const cstr_utf8* src)
 {
-    const char* end;
+    const cstr_utf8* end;
 
     CSTR_ASSERT(src != NULL);
     
@@ -870,6 +874,42 @@ CSTR_API size_t cstr_strlen(const char* src)
     }
 
     return end - src;
+}
+
+CSTR_API size_t utf16_strlen(const cstr_utf16* src)
+{
+    const cstr_utf16* end;
+
+    CSTR_ASSERT(src != NULL);
+    
+    end = src;
+    while (end[0] != '\0') {
+        end += 1;
+    }
+
+    return end - src;
+}
+
+CSTR_API size_t utf32_strlen(const cstr_utf32* src)
+{
+    const cstr_utf32* end;
+
+    CSTR_ASSERT(src != NULL);
+    
+    end = src;
+    while (end[0] != '\0') {
+        end += 1;
+    }
+
+    return end - src;
+}
+
+
+
+
+CSTR_API size_t cstr_strlen(const char* src)
+{
+    return utf8_strlen(src);
 }
 
 CSTR_API char* cstr_strcpy(char* dst, const char* src)
@@ -1044,13 +1084,13 @@ CSTR_API int cstr_strncat_s(char* dst, size_t dstCap, const char* src, size_t co
     return 0;
 }
 
-CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
+CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstCap, int radix)
 {
     int sign;
     unsigned int valueU;
     char* dstEnd;
 
-    if (dst == NULL || dstSizeInBytes == 0) {
+    if (dst == NULL || dstCap == 0) {
         return EINVAL;
     }
     if (radix < 2 || radix > 36) {
@@ -1058,7 +1098,7 @@ CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
         return EINVAL;
     }
 
-    sign = (value < 0 && radix == 10) ? -1 : 1;     // The negative sign is only used when the base is 10.
+    sign = (value < 0 && radix == 10) ? -1 : 1;     /* The negative sign is only used when the base is 10. */
 
     if (value < 0) {
         valueU = -value;
@@ -1077,29 +1117,29 @@ CSTR_API int cstr_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
         }
 
         dstEnd += 1;
-        dstSizeInBytes -= 1;
+        dstCap -= 1;
         valueU /= radix;
-    } while (dstSizeInBytes > 0 && valueU > 0);
+    } while (dstCap > 0 && valueU > 0);
 
-    if (dstSizeInBytes == 0) {
+    if (dstCap == 0) {
         dst[0] = '\0';
-        return EINVAL;  // Ran out of room in the output buffer.
+        return EINVAL;  /* Ran out of room in the output buffer. */
     }
 
     if (sign < 0) {
         *dstEnd++ = '-';
-        dstSizeInBytes -= 1;
+        dstCap -= 1;
     }
 
-    if (dstSizeInBytes == 0) {
+    if (dstCap == 0) {
         dst[0] = '\0';
-        return EINVAL;  // Ran out of room in the output buffer.
+        return EINVAL;  /* Ran out of room in the output buffer. */
     }
 
     *dstEnd = '\0';
 
 
-    // At this point the string will be reversed.
+    /* At this point the string will be reversed. */
     dstEnd -= 1;
     while (dst < dstEnd) {
         char temp = *dst;
