@@ -361,21 +361,21 @@ manner as `snprintf()`. In addition to this, explicit APIs exist for retrieving 
 
 Support is also included for both little- and big-endian layouts for UTF-16 and UTF-32. These APIs will be named appropriate, such as the following:
 
-    cstr_utf16le_to_utf32le()
+    utf16le_to_utf32le()
 
 In the function above, the input data is assumed to be little-endian for both the UTF-16 and UTF-32 data. If the endian is not specified, it will use the BOM,
 if any, to determine the endianness. If the BOM is not present it assumes native endian:
 
-    cstr_utf16_to_utf32()
+    utf16_to_utf32()
 
 Note that you cannot convert from one encoding to another encoding of different endianness. If you need to do this, first convert the data based on the input
 endianness, and then perform a post-processing step on the output data with `cstr_swap_endian_*()`, like the following:
 
-    cstr_utf16be_to_utf32be(...);   // Convert using big-endian layout.
-    cstr_swap_endian_utf32(...);    // Convert the output buffer from big-endian to little-endian.
+    utf16be_to_utf32be(...);   // Convert using big-endian layout.
+    utf32_swap_endian(...);    // Convert the output buffer from big-endian to little-endian.
 
 In the example above we converted UTF-16BE data to UTF-32BE data, but wanted the final output to be UTF-32LE. We did this by simply performing an endian-swap
-as a post-processing operation. To swap the endianness of a UTF-16 string, use `cstr_swap_endian_utf16()` instead.
+as a post-processing operation. To swap the endianness of a UTF-16 string, use `utf16_swap_endian()` instead.
 
 
 API Reference
@@ -414,32 +414,32 @@ addition to these codes, the following custom codes may also be returned:
 
 errno_t cstr_*_to_*([encoding-type]* pOutput, size_t outputCap, size_t* pOutputLen, const [encoding-type]* pInput, size_t inputLen, size_t* pInputLenProcessed, cstr_uint32 flags)
 
-    cstr_utf8_to_utf16ne
-    cstr_utf8_to_utf16le
-    cstr_utf8_to_utf16be
-    cstr_utf8_to_utf16
-    cstr_utf8_to_utf32ne
-    cstr_utf8_to_utf32le
-    cstr_utf8_to_utf32be
-    cstr_utf8_to_utf32
+    utf8_to_utf16ne
+    utf8_to_utf16le
+    utf8_to_utf16be
+    utf8_to_utf16
+    utf8_to_utf32ne
+    utf8_to_utf32le
+    utf8_to_utf32be
+    utf8_to_utf32
 
-    cstr_utf16ne_to_utf8
-    cstr_utf16le_to_utf8
-    cstr_utf16be_to_utf8
-    cstr_utf16_to_utf8
-    cstr_utf16ne_to_utf32ne
-    cstr_utf16le_to_utf32le
-    cstr_utf16be_to_utf32be
-    cstr_utf16_to_utf32
+    utf16ne_to_utf8
+    utf16le_to_utf8
+    utf16be_to_utf8
+    utf16_to_utf8
+    utf16ne_to_utf32ne
+    utf16le_to_utf32le
+    utf16be_to_utf32be
+    utf16_to_utf32
 
-    cstr_utf32ne_to_utf8
-    cstr_utf32le_to_utf8
-    cstr_utf32be_to_utf8
-    cstr_utf32_to_utf8
-    cstr_utf32ne_to_utf16ne
-    cstr_utf32le_to_utf16le
-    cstr_utf32be_to_utf16be
-    cstr_utf32_to_utf16
+    utf32ne_to_utf8
+    utf32le_to_utf8
+    utf32be_to_utf8
+    utf32_to_utf8
+    utf32ne_to_utf16ne
+    utf32le_to_utf16le
+    utf32be_to_utf16be
+    utf32_to_utf16
 
     Converts from one encoding to another. The output buffer can be NULL in which case it will only calculate the required size of the output buffer, not
     including the null terminator. The `outputCap` parameter specifies the size of the output buffer, including the null terminator. `pOutputLen` is optional,
@@ -468,46 +468,46 @@ errno_t cstr_*_to_*([encoding-type]* pOutput, size_t outputCap, size_t* pOutputL
 
 errno_t cstr_*_to_*_len(size_t* pOutputLen, const [encoding-type]* pInput, size_t inputLen, size_t* pInputLenProcessed, cstr_uint32 flags)
 
-    cstr_utf8_to_utf16_len
-    cstr_utf8_to_utf16ne_len
-    cstr_utf8_to_utf16le_len
-    cstr_utf8_to_utf16be_len
-    cstr_utf8_to_utf32_len
-    cstr_utf8_to_utf32ne_len
-    cstr_utf8_to_utf32le_len
-    cstr_utf8_to_utf32be_len
+    utf8_to_utf16_len
+    utf8_to_utf16ne_len
+    utf8_to_utf16le_len
+    utf8_to_utf16be_len
+    utf8_to_utf32_len
+    utf8_to_utf32ne_len
+    utf8_to_utf32le_len
+    utf8_to_utf32be_len
 
-    cstr_utf16ne_to_utf8_len
-    cstr_utf16le_to_utf8_len
-    cstr_utf16be_to_utf8_len
-    cstr_utf16_to_utf8_len
-    cstr_utf16ne_to_utf32_len
-    cstr_utf16le_to_utf32_len
-    cstr_utf16be_to_utf32_len
-    cstr_utf16ne_to_utf32ne_len
-    cstr_utf16le_to_utf32le_len
-    cstr_utf16be_to_utf32be_len
-    cstr_utf16_to_utf32_len
+    utf16ne_to_utf8_len
+    utf16le_to_utf8_len
+    utf16be_to_utf8_len
+    utf16_to_utf8_len
+    utf16ne_to_utf32_len
+    utf16le_to_utf32_len
+    utf16be_to_utf32_len
+    utf16ne_to_utf32ne_len
+    utf16le_to_utf32le_len
+    utf16be_to_utf32be_len
+    utf16_to_utf32_len
 
-    cstr_utf32ne_to_utf8_len
-    cstr_utf32le_to_utf8_len
-    cstr_utf32be_to_utf8_len
-    cstr_utf32_to_utf8_len
-    cstr_utf32ne_to_utf16_len
-    cstr_utf32le_to_utf16_len
-    cstr_utf32be_to_utf16_len
-    cstr_utf32ne_to_utf16ne_len
-    cstr_utf32le_to_utf16le_len
-    cstr_utf32be_to_utf16be_len
-    cstr_utf32_to_utf16_len
+    utf32ne_to_utf8_len
+    utf32le_to_utf8_len
+    utf32be_to_utf8_len
+    utf32_to_utf8_len
+    utf32ne_to_utf16_len
+    utf32le_to_utf16_len
+    utf32be_to_utf16_len
+    utf32ne_to_utf16ne_len
+    utf32le_to_utf16le_len
+    utf32be_to_utf16be_len
+    utf32_to_utf16_len
 
     Retrieves the length of the output string after conversion, not including the null terminator, but does not perform any actual conversion. If an error
     occurs, a result code will be returned to indicate the nature of the error. The `pInput` and `inputLen` parameters have the same meaning as the base
     conversion routines.
 
 
-void cstr_swap_endian_utf16(cstr_utf16* pUTF16, size_t count)
-void cstr_swap_endian_utf32(cstr_utf32* pUTF32, size_t count)
+void utf16_swap_endian(cstr_utf16* pUTF16, size_t count)
+void utf32_swap_endian(cstr_utf32* pUTF32, size_t count)
     Performs an in-place endian swap on the given UTF-16 or UTF-32 string. If `count` is equal to `(size_t)-1`, it will assume the string is null terminated.
 
 
@@ -532,89 +532,89 @@ should be unlikely as they all seems to be positive in all of the implementation
 #define CSTR_FORBID_BOM                                     (1 << 1)
 #define CSTR_ERROR_ON_INVALID_CODE_POINT                    (1 << 2)
 
-CSTR_API cstr_bool32 cstr_is_utf16_bom_le(const cstr_uint8 bom[2]);
-CSTR_API cstr_bool32 cstr_is_utf16_bom_be(const cstr_uint8 bom[2]);
-CSTR_API cstr_bool32 cstr_is_utf32_bom_le(const cstr_uint8 bom[4]);
-CSTR_API cstr_bool32 cstr_is_utf32_bom_be(const cstr_uint8 bom[4]);
+CSTR_API cstr_bool32 utf16_is_bom_le(const cstr_uint8 bom[2]);
+CSTR_API cstr_bool32 utf16_is_bom_be(const cstr_uint8 bom[2]);
+CSTR_API cstr_bool32 utf32_is_bom_le(const cstr_uint8 bom[4]);
+CSTR_API cstr_bool32 utf32_is_bom_be(const cstr_uint8 bom[4]);
 
-CSTR_API cstr_bool32 cstr_has_utf8_bom(const cstr_uint8* pBytes, size_t len);
-CSTR_API cstr_bool32 cstr_has_utf16_bom(const cstr_uint8* pBytes, size_t len);
-CSTR_API cstr_bool32 cstr_has_utf32_bom(const cstr_uint8* pBytes, size_t len);
+CSTR_API cstr_bool32 utf8_has_bom(const cstr_uint8* pBytes, size_t len);
+CSTR_API cstr_bool32 utf16_has_bom(const cstr_uint8* pBytes, size_t len);
+CSTR_API cstr_bool32 utf32_has_bom(const cstr_uint8* pBytes, size_t len);
 
-CSTR_API void cstr_swap_endian_utf16(cstr_utf16* pUTF16, size_t count);
-CSTR_API void cstr_swap_endian_utf32(cstr_utf32* pUTF32, size_t count);
+CSTR_API void utf16_swap_endian(cstr_utf16* pUTF16, size_t count);
+CSTR_API void utf32_swap_endian(cstr_utf32* pUTF32, size_t count);
 
 
 /* UTF-8 */
-CSTR_API errno_t cstr_utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf8_to_utf16ne_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf8_to_utf16le_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf8_to_utf16be_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+CSTR_API errno_t utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf8_to_utf16ne_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+static CSTR_INLINE errno_t utf8_to_utf16le_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+static CSTR_INLINE errno_t utf8_to_utf16be_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
 
-CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf8_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf8_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf16ne(pUTF16, utf16Cap, pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+CSTR_API errno_t utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf8_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf8_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf16ne(pUTF16, utf16Cap, pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
 
-CSTR_API errno_t cstr_utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf8_to_utf32ne_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf8_to_utf32le_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf8_to_utf32be_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+CSTR_API errno_t utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf8_to_utf32ne_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+static CSTR_INLINE errno_t utf8_to_utf32le_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+static CSTR_INLINE errno_t utf8_to_utf32be_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
 
-CSTR_API errno_t cstr_utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf8_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return cstr_utf8_to_utf32ne(pUTF32, utf32Cap, pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+CSTR_API errno_t utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf8_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf32ne(pUTF32, utf32Cap, pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
 
 
 /* UTF-16 */
-CSTR_API errno_t cstr_utf16ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16le_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16be_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16le_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16be_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf16ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf16ne_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16le_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16be_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf16ne_to_utf32ne_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return cstr_utf16ne_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf16le_to_utf32le_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return cstr_utf16le_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf16be_to_utf32be_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return cstr_utf16be_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
-CSTR_API errno_t cstr_utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16ne_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16le_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16be_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf16ne_to_utf32ne_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return utf16ne_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
+static CSTR_INLINE errno_t utf16le_to_utf32le_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return utf16le_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
+static CSTR_INLINE errno_t utf16be_to_utf32be_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags) { return utf16be_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags); }
+CSTR_API errno_t utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf16ne_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16le_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16be_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16ne_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16le_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16be_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags);
 
 
 /* UTF-32 */
-CSTR_API errno_t cstr_utf32ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32le_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32be_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32le_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32be_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf32ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf32ne_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32le_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32be_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-static CSTR_INLINE errno_t cstr_utf32ne_to_utf16ne_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return cstr_utf32ne_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf32le_to_utf16le_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return cstr_utf32le_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
-static CSTR_INLINE errno_t cstr_utf32be_to_utf16be_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return cstr_utf32be_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
-CSTR_API errno_t cstr_utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32ne_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32le_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32be_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+static CSTR_INLINE errno_t utf32ne_to_utf16ne_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return utf32ne_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
+static CSTR_INLINE errno_t utf32le_to_utf16le_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return utf32le_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
+static CSTR_INLINE errno_t utf32be_to_utf16be_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags) { return utf32be_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags); }
+CSTR_API errno_t utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
 
-CSTR_API errno_t cstr_utf32ne_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32le_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32be_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
-CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32ne_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32le_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32be_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags);
 
 
 /**************************************************************************************************************************************************************
@@ -625,21 +625,15 @@ Utilities
 #define cstr_is_null_or_empty(str) ((str) == NULL || (str)[0] == 0)
 
 /* UTF-32 */
-CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len);
+CSTR_API cstr_bool32 utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len);
 
 /* UTF-16 */
 
 /* UTF-8 */
-CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
-CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
-CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
-CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen);
-
-/* Default Wrappers (UTF-8) */
-static CSTR_INLINE cstr_bool32 cstr_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_is_null_or_whitespace(pUTF8, utf8Len); }
-static CSTR_INLINE size_t cstr_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_ltrim_offset(pUTF8, utf8Len); }
-static CSTR_INLINE size_t cstr_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len) { return cstr_utf8_rtrim_offset(pUTF8, utf8Len); }
-static CSTR_INLINE size_t cstr_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen) { return cstr_utf8_next_line(pUTF8, utf8Len, pThisLineLen); }
+CSTR_API cstr_bool32 utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen);
 
 
 #ifdef __cplusplus
@@ -1721,8 +1715,8 @@ CSTR_API cstr8 cstr8_newn_trim(const char* pOther, size_t otherLen)
         return NULL;
     }
 
-    loff = cstr_utf8_ltrim_offset(pOther, otherLen);
-    roff = cstr_utf8_rtrim_offset(pOther, otherLen);
+    loff = utf8_ltrim_offset(pOther, otherLen);
+    roff = utf8_rtrim_offset(pOther, otherLen);
 
     return cstr_newn(pOther + loff, roff - loff);
 }
@@ -1756,7 +1750,7 @@ static CSTR_INLINE cstr_bool32 cstr_is_invalid_utf8_octet(cstr_utf8 utf8)
     return (cstr_uint8)utf8 == 0xC0 || (cstr_uint8)utf8 == 0xC1 || (cstr_uint8)utf8 >= 0xF5;
 }
 
-static CSTR_INLINE void cstr_utf32_cp_to_utf16_pair(cstr_utf32 utf32cp, cstr_utf16* pUTF16)
+static CSTR_INLINE void utf32_cp_to_utf16_pair(cstr_utf32 utf32cp, cstr_utf16* pUTF16)
 {
     /* RFC 2781 - Section 2.1 */
     cstr_utf32 u;
@@ -1768,7 +1762,7 @@ static CSTR_INLINE void cstr_utf32_cp_to_utf16_pair(cstr_utf32 utf32cp, cstr_utf
     pUTF16[1] = (cstr_utf16)(0xDC00 | ((u & 0x003FF) >>  0));
 }
 
-static CSTR_INLINE cstr_utf32 cstr_utf16_pair_to_utf32_cp(const cstr_utf16* pUTF16)
+static CSTR_INLINE cstr_utf32 utf16_pair_to_utf32_cp(const cstr_utf16* pUTF16)
 {
     /* RFC 2781 - Section 2.1 */
     CSTR_ASSERT(pUTF16 != NULL);
@@ -1786,7 +1780,7 @@ static CSTR_INLINE cstr_bool32 cstr_is_valid_code_point(cstr_utf32 utf32)
     return utf32 <= CSTR_UNICODE_MAX_CODE_POINT && !cstr_is_cp_in_surrogate_pair_range(utf32);
 }
 
-static CSTR_INLINE size_t cstr_utf32_cp_to_utf8_len(cstr_utf32 utf32)
+static CSTR_INLINE size_t utf32_cp_to_utf8_len(cstr_utf32 utf32)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1810,7 +1804,7 @@ static CSTR_INLINE size_t cstr_utf32_cp_to_utf8_len(cstr_utf32 utf32)
     return 0; /* Invalid. */
 }
 
-static CSTR_INLINE size_t cstr_utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUTF8, size_t utf8Cap)
+static CSTR_INLINE size_t utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUTF8, size_t utf8Cap)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1852,7 +1846,7 @@ static CSTR_INLINE size_t cstr_utf32_cp_to_utf8(cstr_utf32 utf32, cstr_utf8* pUT
     return 0;
 }
 
-static CSTR_INLINE size_t cstr_utf32_cp_to_utf16_len(cstr_utf32 utf32)
+static CSTR_INLINE size_t utf32_cp_to_utf16_len(cstr_utf32 utf32)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1872,7 +1866,7 @@ static CSTR_INLINE size_t cstr_utf32_cp_to_utf16_len(cstr_utf32 utf32)
 #endif
 }
 
-static CSTR_INLINE size_t cstr_utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* pUTF16, size_t utf16Cap)
+static CSTR_INLINE size_t utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* pUTF16, size_t utf16Cap)
 {
     /* This API assumes the the UTF-32 code point is valid. */
     CSTR_ASSERT(utf32 <= CSTR_UNICODE_MAX_CODE_POINT);
@@ -1886,7 +1880,7 @@ static CSTR_INLINE size_t cstr_utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* p
         }
     } else {
         if (utf16Cap >= 2) {
-            cstr_utf32_cp_to_utf16_pair(utf32, pUTF16);
+            utf32_cp_to_utf16_pair(utf32, pUTF16);
             return 2;
         }
     }
@@ -1899,29 +1893,29 @@ static CSTR_INLINE size_t cstr_utf32_cp_to_utf16(cstr_utf32 utf32, cstr_utf16* p
 
 
 
-CSTR_API cstr_bool32 cstr_is_utf16_bom_le(const cstr_uint8 bom[2])
+CSTR_API cstr_bool32 utf16_is_bom_le(const cstr_uint8 bom[2])
 {
     /* RFC 2781 - Section 3.2 */
     return bom[0] == 0xFF && bom[1] == 0xFE;
 }
 
-CSTR_API cstr_bool32 cstr_is_utf16_bom_be(const cstr_uint8 bom[2])
+CSTR_API cstr_bool32 utf16_is_bom_be(const cstr_uint8 bom[2])
 {
     /* RFC 2781 - Section 3.2 */
     return bom[0] == 0xFE && bom[1] == 0xFF;
 }
 
-CSTR_API cstr_bool32 cstr_is_utf32_bom_le(const cstr_uint8 bom[4])
+CSTR_API cstr_bool32 utf32_is_bom_le(const cstr_uint8 bom[4])
 {
     return bom[0] == 0xFF && bom[1] == 0xFE && bom[2] == 0x00 && bom[3] == 0x00;
 }
 
-CSTR_API cstr_bool32 cstr_is_utf32_bom_be(const cstr_uint8 bom[4])
+CSTR_API cstr_bool32 utf32_is_bom_be(const cstr_uint8 bom[4])
 {
     return bom[0] == 0x00 && bom[1] == 0x00 && bom[2] == 0xFE && bom[3] == 0xFF;
 }
 
-CSTR_API cstr_bool32 cstr_has_utf8_bom(const cstr_uint8* pBytes, size_t len)
+CSTR_API cstr_bool32 utf8_has_bom(const cstr_uint8* pBytes, size_t len)
 {
     if (pBytes == NULL) {
         return CSTR_FALSE;
@@ -1934,7 +1928,7 @@ CSTR_API cstr_bool32 cstr_has_utf8_bom(const cstr_uint8* pBytes, size_t len)
     return (pBytes[0] == 0xEF && pBytes[1] == 0xBB && pBytes[2] == 0xBF);
 }
 
-CSTR_API cstr_bool32 cstr_has_utf16_bom(const cstr_uint8* pBytes, size_t len)
+CSTR_API cstr_bool32 utf16_has_bom(const cstr_uint8* pBytes, size_t len)
 {
     if (pBytes == NULL) {
         return CSTR_FALSE;
@@ -1944,10 +1938,10 @@ CSTR_API cstr_bool32 cstr_has_utf16_bom(const cstr_uint8* pBytes, size_t len)
         return CSTR_FALSE;
     }
 
-    return cstr_is_utf16_bom_le(pBytes) || cstr_is_utf16_bom_be(pBytes);
+    return utf16_is_bom_le(pBytes) || utf16_is_bom_be(pBytes);
 }
 
-CSTR_API cstr_bool32 cstr_has_utf32_bom(const cstr_uint8* pBytes, size_t len)
+CSTR_API cstr_bool32 utf32_has_bom(const cstr_uint8* pBytes, size_t len)
 {
     if (pBytes == NULL) {
         return CSTR_FALSE;
@@ -1957,11 +1951,11 @@ CSTR_API cstr_bool32 cstr_has_utf32_bom(const cstr_uint8* pBytes, size_t len)
         return CSTR_FALSE;
     }
 
-    return cstr_is_utf32_bom_le(pBytes) || cstr_is_utf32_bom_be(pBytes);
+    return utf32_is_bom_le(pBytes) || utf32_is_bom_be(pBytes);
 }
 
 
-CSTR_API void cstr_swap_endian_utf16(cstr_utf16* pUTF16, size_t count)
+CSTR_API void utf16_swap_endian(cstr_utf16* pUTF16, size_t count)
 {
     if (count == (size_t)-1) {
         size_t i;
@@ -1976,7 +1970,7 @@ CSTR_API void cstr_swap_endian_utf16(cstr_utf16* pUTF16, size_t count)
     }
 }
 
-CSTR_API void cstr_swap_endian_utf32(cstr_utf32* pUTF32, size_t count)
+CSTR_API void utf32_swap_endian(cstr_utf32* pUTF32, size_t count)
 {
     if (count == (size_t)-1) {
         size_t i;
@@ -1992,7 +1986,7 @@ CSTR_API void cstr_swap_endian_utf32(cstr_utf32* pUTF32, size_t count)
 }
 
 
-CSTR_API errno_t cstr_utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf16Len = 0;
@@ -2014,7 +2008,7 @@ CSTR_API errno_t cstr_utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf8_bom((const cstr_uint8*)pUTF8, utf8Len)) {
+    if (utf8_has_bom((const cstr_uint8*)pUTF8, utf8Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -2181,13 +2175,13 @@ CSTR_API errno_t cstr_utf8_to_utf16_len(size_t* pUTF16Len, const cstr_utf8* pUTF
     return result;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf16CapOriginal = utf16Cap;
 
     if (pUTF16 == NULL) {
-        return cstr_utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+        return utf8_to_utf16_len(pUTF16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
     }
 
     if (pUTF16Len != NULL) {
@@ -2203,7 +2197,7 @@ CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf8_bom((const cstr_uint8*)pUTF8, utf8Len)) {
+    if (utf8_has_bom((const cstr_uint8*)pUTF8, utf8Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;   /* Found a BOM, but it's forbidden. */
         }
@@ -2284,7 +2278,7 @@ CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_
                                     pUTF8    += 4;
                                 }
                             } else {
-                                cstr_utf32_cp_to_utf16_pair(cp, pUTF16);
+                                utf32_cp_to_utf16_pair(cp, pUTF16);
                                 pUTF16   += 2;
                                 utf16Cap -= 2;
                                 pUTF8    += 4;
@@ -2379,7 +2373,7 @@ CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_
                                     iUTF8    += 4;
                                 }
                             } else {
-                                cstr_utf32_cp_to_utf16_pair(cp, pUTF16);
+                                utf32_cp_to_utf16_pair(cp, pUTF16);
                                 pUTF16   += 2;
                                 utf16Cap -= 2;
                                 iUTF8    += 4;
@@ -2420,13 +2414,13 @@ CSTR_API errno_t cstr_utf8_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_
     return result;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result;
     size_t utf16Len;
 
     /* Always do a native endian conversion first, then byte swap if necessary. */
-    result = cstr_utf8_to_utf16ne(pUTF16, utf16Cap, &utf16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+    result = utf8_to_utf16ne(pUTF16, utf16Cap, &utf16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
 
     if (pUTF16Len != NULL) {
         *pUTF16Len = utf16Len;
@@ -2437,19 +2431,19 @@ CSTR_API errno_t cstr_utf8_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_
     }
 
     if (pUTF16 != NULL && !cstr_is_little_endian()) {
-        cstr_swap_endian_utf16(pUTF16, utf16Len);
+        utf16_swap_endian(pUTF16, utf16Len);
     }
 
     return CSTR_SUCCESS;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result;
     size_t utf16Len;
 
     /* Always do a native endian conversion first, then byte swap if necessary. */
-    result = cstr_utf8_to_utf16ne(pUTF16, utf16Cap, &utf16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+    result = utf8_to_utf16ne(pUTF16, utf16Cap, &utf16Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
 
     if (pUTF16Len != NULL) {
         *pUTF16Len = utf16Len;
@@ -2460,13 +2454,13 @@ CSTR_API errno_t cstr_utf8_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_
     }
 
     if (pUTF16 != NULL && !cstr_is_big_endian()) {
-        cstr_swap_endian_utf16(pUTF16, utf16Len);
+        utf16_swap_endian(pUTF16, utf16Len);
     }
 
     return CSTR_SUCCESS;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf32Len = 0;
@@ -2488,7 +2482,7 @@ CSTR_API errno_t cstr_utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf8_bom((const cstr_uint8*)pUTF8, utf8Len)) {
+    if (utf8_has_bom((const cstr_uint8*)pUTF8, utf8Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -2632,13 +2626,13 @@ CSTR_API errno_t cstr_utf8_to_utf32_len(size_t* pUTF32Len, const cstr_utf8* pUTF
 }
 
 
-CSTR_API errno_t cstr_utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf32CapOriginal = utf32Cap;
 
     if (pUTF32 == NULL) {
-        return cstr_utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+        return utf8_to_utf32_len(pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
     }
 
     if (pUTF32Len != NULL) {
@@ -2654,7 +2648,7 @@ CSTR_API errno_t cstr_utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf8_bom((const cstr_uint8*)pUTF8, utf8Len)) {
+    if (utf8_has_bom((const cstr_uint8*)pUTF8, utf8Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -2835,13 +2829,13 @@ CSTR_API errno_t cstr_utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_
     return result;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result;
     size_t utf32Len;
 
     /* Always do a native endian conversion first, then byte swap if necessary. */
-    result = cstr_utf8_to_utf32ne(pUTF32, utf32Cap, &utf32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+    result = utf8_to_utf32ne(pUTF32, utf32Cap, &utf32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
 
     if (pUTF32Len != NULL) {
         *pUTF32Len = utf32Len;
@@ -2852,19 +2846,19 @@ CSTR_API errno_t cstr_utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_
     }
 
     if (pUTF32 != NULL && !cstr_is_little_endian()) {
-        cstr_swap_endian_utf32(pUTF32, utf32Len);
+        utf32_swap_endian(pUTF32, utf32Len);
     }
 
     return CSTR_SUCCESS;
 }
 
-CSTR_API errno_t cstr_utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
 {
     errno_t result;
     size_t utf32Len;
 
     /* Always do a native endian conversion first, then byte swap if necessary. */
-    result = cstr_utf8_to_utf32ne(pUTF32, utf32Cap, &utf32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+    result = utf8_to_utf32ne(pUTF32, utf32Cap, &utf32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags);
 
     if (pUTF32Len != NULL) {
         *pUTF32Len = utf32Len;
@@ -2875,7 +2869,7 @@ CSTR_API errno_t cstr_utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_
     }
 
     if (pUTF32 != NULL && !cstr_is_big_endian()) {
-        cstr_swap_endian_utf32(pUTF32, utf32Len);
+        utf32_swap_endian(pUTF32, utf32Len);
     }
 
     return CSTR_SUCCESS;
@@ -2883,7 +2877,7 @@ CSTR_API errno_t cstr_utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_
 
 
 
-CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf8Len = 0;
@@ -2908,7 +2902,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -2947,7 +2941,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -2973,7 +2967,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                 }
             }
 
-            utf8Len += cstr_utf32_cp_to_utf8_len(utf32);
+            utf8Len += utf32_cp_to_utf8_len(utf32);
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3007,7 +3001,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -3032,7 +3026,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                 }
             }
 
-            utf8Len += cstr_utf32_cp_to_utf8_len(utf32);
+            utf8Len += utf32_cp_to_utf8_len(utf32);
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3047,33 +3041,33 @@ CSTR_API errno_t cstr_utf16_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
     return result;
 }
 
-CSTR_API errno_t cstr_utf16ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf16le_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16le_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     } else {
-        return cstr_utf16be_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16be_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf16le_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16le_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
+    return utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf16be_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16be_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
+    return utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (pUTF8Len != NULL) {
         *pUTF8Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         errno_t result;
         size_t utf16LenProcessed;
 
@@ -3083,7 +3077,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf16_bom_le((const cstr_uint8*)pUTF16);
+        isLE = utf16_is_bom_le((const cstr_uint8*)pUTF16);
         
         pUTF16 += 1;    /* Skip past the BOM. */
         if (utf16Len != (size_t)-1) {
@@ -3091,9 +3085,9 @@ CSTR_API errno_t cstr_utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF
         }
 
         if (isLE) {
-            result = cstr_utf16le_to_utf8_len(pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16le_to_utf8_len(pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf16be_to_utf8_len(pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16be_to_utf8_len(pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3104,11 +3098,11 @@ CSTR_API errno_t cstr_utf16_to_utf8_len(size_t* pUTF8Len, const cstr_utf16* pUTF
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf16ne_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+    return utf16ne_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf8CapOriginal = utf8Cap;
@@ -3118,7 +3112,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     size_t utf8cpLen;   /* Code point length in UTF-8 code units. */
 
     if (pUTF8 == NULL) {
-        return cstr_utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, isLE);
+        return utf16_to_utf8_len_internal(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, isLE);
     }
 
     if (pUTF8Len != NULL) {
@@ -3134,7 +3128,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -3178,7 +3172,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -3204,7 +3198,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                 }
             }
 
-            utf8cpLen = cstr_utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
+            utf8cpLen = utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
             if (utf8cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -3250,7 +3244,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -3276,7 +3270,7 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                 }
             }
 
-            utf8cpLen = cstr_utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
+            utf8cpLen = utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
             if (utf8cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -3305,29 +3299,29 @@ CSTR_API errno_t cstr_utf16_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     return result;
 }
 
-CSTR_API errno_t cstr_utf16ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf16le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     } else {
-        return cstr_utf16be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf16le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
+    return utf16_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf16be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
+    return utf16_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (pUTF8 == NULL) {
-        return cstr_utf16_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16_to_utf8_len(pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 
     if (pUTF8Len != NULL) {
@@ -3339,7 +3333,7 @@ CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         errno_t result;
         size_t utf16LenProcessed;
 
@@ -3349,7 +3343,7 @@ CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf16_bom_le((const cstr_uint8*)pUTF16);
+        isLE = utf16_is_bom_le((const cstr_uint8*)pUTF16);
         
         pUTF16 += 1;    /* Skip past the BOM. */
         if (utf16Len != (size_t)-1) {
@@ -3357,9 +3351,9 @@ CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
         }
 
         if (isLE) {
-            result = cstr_utf16le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf16be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3370,11 +3364,11 @@ CSTR_API errno_t cstr_utf16_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf16ne_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+    return utf16ne_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf16_to_utf32_len_internal(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf16_to_utf32_len_internal(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf32Len = 0;
@@ -3398,7 +3392,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_len_internal(size_t* pUTF32Len, const cstr_
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -3522,33 +3516,33 @@ CSTR_API errno_t cstr_utf16_to_utf32_len_internal(size_t* pUTF32Len, const cstr_
     return result;
 }
 
-CSTR_API errno_t cstr_utf16ne_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16ne_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf16le_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16le_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     } else {
-        return cstr_utf16be_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16be_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf16le_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16le_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
+    return utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf16be_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16be_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
+    return utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (pUTF32Len != NULL) {
         *pUTF32Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         errno_t result;
         size_t utf16LenProcessed;
 
@@ -3558,7 +3552,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pU
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf16_bom_le((const cstr_uint8*)pUTF16);
+        isLE = utf16_is_bom_le((const cstr_uint8*)pUTF16);
         
         pUTF16 += 1;    /* Skip past the BOM. */
         if (utf16Len != (size_t)-1) {
@@ -3566,9 +3560,9 @@ CSTR_API errno_t cstr_utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pU
         }
 
         if (isLE) {
-            result = cstr_utf16le_to_utf32_len(pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16le_to_utf32_len(pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf16be_to_utf32_len(pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16be_to_utf32_len(pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3579,11 +3573,11 @@ CSTR_API errno_t cstr_utf16_to_utf32_len(size_t* pUTF32Len, const cstr_utf16* pU
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf16ne_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+    return utf16ne_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf32CapOriginal = utf32Cap;
@@ -3592,7 +3586,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Ca
     cstr_utf32 utf32;
 
     if (pUTF32 == NULL) {
-        return cstr_utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, isLE);
+        return utf16_to_utf32_len_internal(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, isLE);
     }
 
     if (pUTF32Len != NULL) {
@@ -3608,7 +3602,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Ca
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -3652,7 +3646,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Ca
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -3724,7 +3718,7 @@ CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Ca
                         }
                     
                         if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
-                            utf32 = cstr_utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
+                            utf32 = utf16_pair_to_utf32_cp(pUTF16 + iUTF16);
                         } else {
                             if ((flags & CSTR_ERROR_ON_INVALID_CODE_POINT) != 0) {
                                 result = CSTR_ECODEPOINT;
@@ -3779,29 +3773,29 @@ CSTR_API errno_t cstr_utf16_to_utf32_internal(cstr_utf32* pUTF32, size_t utf32Ca
     return result;
 }
 
-CSTR_API errno_t cstr_utf16ne_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16ne_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf16le_to_utf32le(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16le_to_utf32le(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     } else {
-        return cstr_utf16be_to_utf32be(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16be_to_utf32be(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf16le_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16le_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf32_internal(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
+    return utf16_to_utf32_internal(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf16be_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16be_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf16_to_utf32_internal(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
+    return utf16_to_utf32_internal(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf16* pUTF16, size_t utf16Len, size_t* pUTF16LenProcessed, cstr_uint32 flags)
 {
     if (pUTF32 == NULL) {
-        return cstr_utf16_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+        return utf16_to_utf32_len(pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
     }
 
     if (pUTF32Len != NULL) {
@@ -3813,7 +3807,7 @@ CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf16_bom((const cstr_uint8*)pUTF16, utf16Len)) {
+    if (utf16_has_bom((const cstr_uint8*)pUTF16, utf16Len)) {
         errno_t result;
         size_t utf16LenProcessed;
 
@@ -3823,7 +3817,7 @@ CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf16_bom_le((const cstr_uint8*)pUTF16);
+        isLE = utf16_is_bom_le((const cstr_uint8*)pUTF16);
         
         pUTF16 += 1;    /* Skip past the BOM. */
         if (utf16Len != (size_t)-1) {
@@ -3831,9 +3825,9 @@ CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t
         }
 
         if (isLE) {
-            result = cstr_utf16le_to_utf32le(pUTF32, utf32Cap, pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16le_to_utf32le(pUTF32, utf32Cap, pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf16be_to_utf32be(pUTF32, utf32Cap, pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf16be_to_utf32be(pUTF32, utf32Cap, pUTF32Len, pUTF16+1, utf16Len-1, &utf16LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF16LenProcessed != NULL) {
@@ -3844,11 +3838,11 @@ CSTR_API errno_t cstr_utf16_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf16ne_to_utf32ne(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
+    return utf16ne_to_utf32ne(pUTF32, utf32Cap, pUTF32Len, pUTF16, utf16Len, pUTF16LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf8Len = 0;
@@ -3871,7 +3865,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -3901,7 +3895,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                 }
             }
 
-            utf8Len += cstr_utf32_cp_to_utf8_len(utf32);
+            utf8Len += utf32_cp_to_utf8_len(utf32);
             pUTF32  += 1;
         }
 
@@ -3927,7 +3921,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
                 }
             }
 
-            utf8Len += cstr_utf32_cp_to_utf8_len(utf32);
+            utf8Len += utf32_cp_to_utf8_len(utf32);
         }
 
         if (pUTF32LenProcessed != NULL) {
@@ -3942,33 +3936,33 @@ CSTR_API errno_t cstr_utf32_to_utf8_len_internal(size_t* pUTF8Len, const cstr_ut
     return result;
 }
 
-CSTR_API errno_t cstr_utf32ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32ne_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf32le_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32le_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     } else {
-        return cstr_utf32be_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32be_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf32le_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32le_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf8_len_internal(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
+    return utf32_to_utf8_len_internal(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf32be_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32be_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf8_len_internal(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
+    return utf32_to_utf8_len_internal(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (pUTF8Len != NULL) {
         *pUTF8Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         errno_t result;
         size_t utf32LenProcessed;
 
@@ -3978,7 +3972,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf32_bom_le((const cstr_uint8*)pUTF32);
+        isLE = utf32_is_bom_le((const cstr_uint8*)pUTF32);
         
         pUTF32 += 1;    /* Skip past the BOM. */
         if (utf32Len != (size_t)-1) {
@@ -3986,9 +3980,9 @@ CSTR_API errno_t cstr_utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF
         }
 
         if (isLE) {
-            result = cstr_utf32le_to_utf8_len(pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32le_to_utf8_len(pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf32be_to_utf8_len(pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32be_to_utf8_len(pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF32LenProcessed) {
@@ -3999,11 +3993,11 @@ CSTR_API errno_t cstr_utf32_to_utf8_len(size_t* pUTF8Len, const cstr_utf32* pUTF
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf32ne_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+    return utf32ne_to_utf8_len(pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf8CapOriginal = utf8Cap;
@@ -4011,7 +4005,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     cstr_utf32 utf32;
 
     if (pUTF8 == NULL) {
-        return cstr_utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, isLE);
+        return utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, isLE);
     }
 
     if (pUTF8Len != NULL) {
@@ -4027,7 +4021,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -4062,7 +4056,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                 }
             }
 
-            utf8cpLen = cstr_utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
+            utf8cpLen = utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
             if (utf8cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -4100,7 +4094,7 @@ CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
                 }
             }
 
-            utf8cpLen = cstr_utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
+            utf8cpLen = utf32_cp_to_utf8(utf32, pUTF8, utf8Cap);
             if (utf8cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -4129,33 +4123,33 @@ CSTR_API errno_t cstr_utf32_to_utf8_internal(cstr_utf8* pUTF8, size_t utf8Cap, s
     return result;
 }
 
-CSTR_API errno_t cstr_utf32ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32ne_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf32le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     } else {
-        return cstr_utf32be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf32le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32le_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
+    return utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf32be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32be_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
+    return utf32_to_utf8_internal(pUTF8, utf8Cap, pUTF8Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pUTF8Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (pUTF8Len != NULL) {
         *pUTF8Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         errno_t result;
         size_t utf32LenProcessed;
 
@@ -4165,7 +4159,7 @@ CSTR_API errno_t cstr_utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf32_bom_le((const cstr_uint8*)pUTF32);
+        isLE = utf32_is_bom_le((const cstr_uint8*)pUTF32);
         
         pUTF32 += 1;    /* Skip past the BOM. */
         if (utf32Len != (size_t)-1) {
@@ -4173,9 +4167,9 @@ CSTR_API errno_t cstr_utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
         }
 
         if (isLE) {
-            result = cstr_utf32le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32le_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf32be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32be_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF32LenProcessed) {
@@ -4186,12 +4180,12 @@ CSTR_API errno_t cstr_utf32_to_utf8(cstr_utf8* pUTF8, size_t utf8Cap, size_t* pU
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf32ne_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, pUTF32LenProcessed, flags);
+    return utf32ne_to_utf8(pUTF8, utf8Cap, pUTF8Len, pUTF32+1, utf32Len-1, pUTF32LenProcessed, flags);
 }
 
 
 
-CSTR_API errno_t cstr_utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf16Len = 0;
@@ -4214,7 +4208,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -4244,7 +4238,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_
                 }
             }
 
-            utf16Len += cstr_utf32_cp_to_utf16_len(utf32);
+            utf16Len += utf32_cp_to_utf16_len(utf32);
             pUTF32   += 1;
         }
 
@@ -4270,7 +4264,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_
                 }
             }
 
-            utf16Len += cstr_utf32_cp_to_utf16_len(utf32);
+            utf16Len += utf32_cp_to_utf16_len(utf32);
         }
 
         if (pUTF32LenProcessed != NULL) {
@@ -4285,33 +4279,33 @@ CSTR_API errno_t cstr_utf32_to_utf16_len_internal(size_t* pUTF16Len, const cstr_
     return result;
 }
 
-errno_t cstr_utf32ne_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+errno_t utf32ne_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf32le_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32le_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     } else {
-        return cstr_utf32be_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32be_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf32le_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32le_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf16_len_internal(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
+    return utf32_to_utf16_len_internal(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf32be_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32be_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf16_len_internal(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
+    return utf32_to_utf16_len_internal(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (pUTF16Len != NULL) {
         *pUTF16Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         errno_t result;
         size_t utf32LenProcessed;
 
@@ -4321,7 +4315,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pU
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf32_bom_le((const cstr_uint8*)pUTF32);
+        isLE = utf32_is_bom_le((const cstr_uint8*)pUTF32);
         
         pUTF32 += 1;    /* Skip past the BOM. */
         if (utf32Len != (size_t)-1) {
@@ -4329,9 +4323,9 @@ CSTR_API errno_t cstr_utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pU
         }
 
         if (isLE) {
-            result = cstr_utf32le_to_utf16_len(pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32le_to_utf16_len(pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf32be_to_utf16_len(pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32be_to_utf16_len(pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF32LenProcessed) {
@@ -4342,11 +4336,11 @@ CSTR_API errno_t cstr_utf32_to_utf16_len(size_t* pUTF16Len, const cstr_utf32* pU
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf32ne_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+    return utf32ne_to_utf16_len(pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
 }
 
 
-CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
+CSTR_API errno_t utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags, cstr_bool32 isLE)
 {
     errno_t result = CSTR_SUCCESS;
     size_t utf16CapOriginal = utf16Cap;
@@ -4354,7 +4348,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Ca
     cstr_utf32 utf32;
 
     if (pUTF16 == NULL) {
-        return cstr_utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, isLE);
+        return utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, isLE);
     }
 
     if (pUTF16Len != NULL) {
@@ -4370,7 +4364,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Ca
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         if ((flags & CSTR_FORBID_BOM) != 0) {
             return CSTR_EBOM;  /* Found a BOM, but it's forbidden. */
         }
@@ -4405,7 +4399,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Ca
                 }
             }
 
-            utf16cpLen = cstr_utf32_cp_to_utf16(utf32, pUTF16, utf16Cap);
+            utf16cpLen = utf32_cp_to_utf16(utf32, pUTF16, utf16Cap);
             if (utf16cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -4459,7 +4453,7 @@ CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Ca
                 }
             }
 
-            utf16cpLen = cstr_utf32_cp_to_utf16(utf32, pUTF16, utf16Cap);
+            utf16cpLen = utf32_cp_to_utf16(utf32, pUTF16, utf16Cap);
             if (utf16cpLen == 0) {
                 result = ENOMEM;    /* A return value of 0 at this point means there was not enough room in the output buffer. */
                 break;
@@ -4504,33 +4498,33 @@ CSTR_API errno_t cstr_utf32_to_utf16_internal(cstr_utf16* pUTF16, size_t utf16Ca
     return result;
 }
 
-CSTR_API errno_t cstr_utf32ne_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32ne_to_utf16ne(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (cstr_is_little_endian()) {
-        return cstr_utf32le_to_utf16le(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32le_to_utf16le(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     } else {
-        return cstr_utf32be_to_utf16be(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
+        return utf32be_to_utf16be(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags);
     }
 }
 
-CSTR_API errno_t cstr_utf32le_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32le_to_utf16le(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
+    return utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_TRUE);
 }
 
-CSTR_API errno_t cstr_utf32be_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32be_to_utf16be(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
-    return cstr_utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
+    return utf32_to_utf16_internal(pUTF16, utf16Cap, pUTF16Len, pUTF32, utf32Len, pUTF32LenProcessed, flags, CSTR_FALSE);
 }
 
-CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
+CSTR_API errno_t utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t* pUTF16Len, const cstr_utf32* pUTF32, size_t utf32Len, size_t* pUTF32LenProcessed, cstr_uint32 flags)
 {
     if (pUTF16Len != NULL) {
         *pUTF16Len = 0;
     }
 
     /* Check for BOM. */
-    if (cstr_has_utf32_bom((const cstr_uint8*)pUTF32, utf32Len)) {
+    if (utf32_has_bom((const cstr_uint8*)pUTF32, utf32Len)) {
         errno_t result;
         size_t utf32LenProcessed;
 
@@ -4540,7 +4534,7 @@ CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t
         }
 
         /* With this function, we need to use the endian defined by the BOM. */
-        isLE = cstr_is_utf32_bom_le((const cstr_uint8*)pUTF32);
+        isLE = utf32_is_bom_le((const cstr_uint8*)pUTF32);
         
         pUTF32 += 1;    /* Skip past the BOM. */
         if (utf32Len != (size_t)-1) {
@@ -4548,9 +4542,9 @@ CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t
         }
 
         if (isLE) {
-            result = cstr_utf32le_to_utf16le(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32le_to_utf16le(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         } else {
-            result = cstr_utf32be_to_utf16be(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
+            result = utf32be_to_utf16be(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, &utf32LenProcessed, flags | CSTR_FORBID_BOM); /* <-- We already found a BOM, so we don't want to allow another occurance. */
         }
 
         if (pUTF32LenProcessed) {
@@ -4561,7 +4555,7 @@ CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t
     }
 
     /* Getting here means there was no BOM, so assume native endian. */
-    return cstr_utf32ne_to_utf16ne(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, pUTF32LenProcessed, flags);
+    return utf32ne_to_utf16ne(pUTF16, utf16Cap, pUTF16Len, pUTF32+1, utf32Len-1, pUTF32LenProcessed, flags);
 }
 
 
@@ -4571,7 +4565,7 @@ CSTR_API errno_t cstr_utf32_to_utf16(cstr_utf16* pUTF16, size_t utf16Cap, size_t
 Utilities
 
 **************************************************************************************************************************************************************/
-CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len)
+CSTR_API cstr_bool32 utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_t utf32Len)
 {
     if (pUTF32 == NULL) {
         return CSTR_TRUE;
@@ -4612,7 +4606,7 @@ CSTR_API cstr_bool32 cstr_utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, 
     return CSTR_TRUE;
 }
 
-CSTR_API cstr_bool32 cstr_utf32_is_newline(cstr_utf32 utf32)
+CSTR_API cstr_bool32 utf32_is_newline(cstr_utf32 utf32)
 {
     if (utf32 >= 0x0A && utf32 <= 0x0D) {
         return CSTR_TRUE;
@@ -4629,7 +4623,7 @@ CSTR_API cstr_bool32 cstr_utf32_is_newline(cstr_utf32 utf32)
     return CSTR_FALSE;
 }
 
-CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len)
+CSTR_API cstr_bool32 utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len)
 {
     if (pUTF8 == NULL) {
         return CSTR_TRUE;
@@ -4642,7 +4636,7 @@ CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, siz
         int err;
 
         /* We expect ENOMEM to be returned, but we should still have a valid utf32 character. */
-        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        err = utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
         if (err != 0 && err != ENOMEM) {
             break;
         }
@@ -4651,7 +4645,7 @@ CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, siz
             break;
         }
 
-        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+        if (utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
             return CSTR_FALSE;
         }
 
@@ -4663,7 +4657,7 @@ CSTR_API cstr_bool32 cstr_utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, siz
 }
 
 
-CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
+CSTR_API size_t utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
 {
     size_t utf8RunningOffset = 0;
 
@@ -4676,7 +4670,7 @@ CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
         size_t utf8Processed;
         int err;
 
-        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        err = utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
         if (err != 0 && err != ENOMEM) {
             break;
         }
@@ -4685,7 +4679,7 @@ CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
             break;
         }
 
-        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+        if (utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
             break;
         }
 
@@ -4697,7 +4691,7 @@ CSTR_API size_t cstr_utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
     return utf8RunningOffset;
 }
 
-CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
+CSTR_API size_t utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
 {
     size_t utf8RunningOffset = 0;
     size_t utf8LastNonWhitespaceOffset = utf8Len;
@@ -4711,7 +4705,7 @@ CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
         size_t utf8Processed;
         int err;
 
-        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        err = utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
         if (err != 0 && err != ENOMEM) {
             break;
         }
@@ -4722,7 +4716,7 @@ CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
 
         utf8RunningOffset += utf8Processed;
 
-        if (cstr_utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
+        if (utf32_is_null_or_whitespace(&utf32, 1) == CSTR_FALSE) {
             utf8LastNonWhitespaceOffset = utf8RunningOffset;
         }
 
@@ -4733,7 +4727,7 @@ CSTR_API size_t cstr_utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
     return utf8LastNonWhitespaceOffset;
 }
 
-CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen)
+CSTR_API size_t utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen)
 {
     size_t thisLen = 0;
     size_t nextBeg = 0;
@@ -4753,7 +4747,7 @@ CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size
         int err;
 
         /* We expect ENOMEM to be returned, but we should still have a valid utf32 character. */
-        err = cstr_utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        err = utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
         if (err != 0 && err != ENOMEM) {
             break;
         }
@@ -4764,7 +4758,7 @@ CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size
 
         nextBeg += utf8Processed;
 
-        if (cstr_utf32_is_newline(utf32) == CSTR_TRUE) {
+        if (utf32_is_newline(utf32) == CSTR_TRUE) {
             /* Special case for \r\n. This needs to be treated as one line. The \r by itself should also be treated as a new line, however. */
             if (utf8Len + utf8Processed > 0 && pUTF8[utf8Processed] == '\n') {
                 nextBeg += 1;
@@ -4773,7 +4767,7 @@ CSTR_API size_t cstr_utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size
             break;
         }
 
-        CSTR_ASSERT(utf8Len >= utf8Processed);  /* If there wasn't enough data in the UTF-8 string, cstr_utf8_to_utf32() should have failed. */
+        CSTR_ASSERT(utf8Len >= utf8Processed);  /* If there wasn't enough data in the UTF-8 string, utf8_to_utf32() should have failed. */
 
         thisLen += utf8Processed;
         pUTF8   += utf8Processed;
