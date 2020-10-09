@@ -305,6 +305,8 @@ CSTR_API cstr8 cstr8_setn(cstr8 str, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_set(cstr8 str, const char* pOther);
 CSTR_API cstr8 cstr8_catn(cstr8 str, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther);
+CSTR_API cstr8 cstr8_catv(cstr8 str, const char* pFormat, va_list args);
+CSTR_API cstr8 cstr8_catf(cstr8 str, const char* pFormat, ...);
 CSTR_API size_t cstr8_len(cstr8 str);
 CSTR_API size_t cstr8_cap(cstr8 str);
 CSTR_API size_t cstr8_find(const char* str, const char* other);  /* Returns cstr_npos if string not found, otherwise returns offset in bytes. */
@@ -315,8 +317,10 @@ CSTR_API const char* cstr8_substr_tagged(const char* str, const char* pTagBeg, c
 CSTR_API cstr8 cstr8_new_substr_tagged(const char* str, const char* pTagBeg, const char* pTagEnd);
 CSTR_API cstr8 cstr8_replace_range(cstr8 str, size_t replaceOffset, size_t replaceLen, const char* pOther, size_t otherLen);
 CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const char* pTagEnd, const char* pOther, const char* pOtherTagBeg, const char* pOtherTagEnd, cstr_bool32 keepTagsOnSeparateLines);
+CSTR_API cstr8 cstr8_replace_all(cstr8 str, const char* pQuery, size_t queryLen, const char* pReplacement, size_t replacementLen);
 CSTR_API cstr8 cstr8_new_trim(const char* pOther);
 CSTR_API cstr8 cstr8_newn_trim(const char* pOther, size_t otherLen);
+CSTR_API cstr8 cstr8_trim(cstr8 str);
 CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index);
 
 #define cstr_alloc                  cstr8_alloc
@@ -329,6 +333,8 @@ CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index);
 #define cstr_set                    cstr8_set
 #define cstr_catn                   cstr8_catn
 #define cstr_cat                    cstr8_cat
+#define cstr_catv                   cstr8_catv
+#define cstr_catf                   cstr8_catf
 #define cstr_len                    cstr8_len
 #define cstr_cap                    cstr8_cap
 #define cstr_find                   cstr8_find
@@ -339,9 +345,11 @@ CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index);
 #define cstr_new_substr_tagged      cstr8_new_substr_tagged
 #define cstr_replace_range          cstr8_replace_range
 #define cstr_replace_range_tagged   cstr8_replace_range_tagged
-#define cstr_new_trim               cstr8_new_trim;
-#define cstr_newn_trim              cstr8_newn_trim;
-#define cstr_remove_at              cstr8_remove_at;
+#define cstr_replace_all            cstr8_replace_all
+#define cstr_new_trim               cstr8_new_trim
+#define cstr_newn_trim              cstr8_newn_trim
+#define cstr_trim                   cstr8_trim
+#define cstr_remove_at              cstr8_remove_at
 #endif
 
 
@@ -631,9 +639,101 @@ CSTR_API cstr_bool32 utf32_is_null_or_whitespace(const cstr_utf32* pUTF32, size_
 
 /* UTF-8 */
 CSTR_API cstr_bool32 utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
+CSTR_API size_t utf8_next_whitespace(const cstr_utf8* pUTF8, size_t utf8Len);
 CSTR_API size_t utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
 CSTR_API size_t utf8_rtrim_offset(const cstr_utf8* pUTF8, size_t utf8Len);
 CSTR_API size_t utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* pThisLineLen);
+
+
+
+
+/**************************************************************************************************************************************************************
+
+Lexer
+
+**************************************************************************************************************************************************************/
+
+/* For single characters, the UTF-32 code point will be the token. Otherwise it will be an entry in this enum. */
+typedef enum
+{
+    cstr_token_type_eof = (CSTR_UNICODE_MAX_CODE_POINT + 1),
+    cstr_token_type_error,
+    cstr_token_type_whitespace,
+    cstr_token_type_newline,                /* New lines are separate from whitespace as they are often treated differently by parsers. */
+    cstr_token_type_comment,
+    cstr_token_type_identifier,
+    cstr_token_type_string_double,          /* "Example" */
+    cstr_token_type_string_single,          /* '1234' */
+    cstr_token_type_integer_literal_dec,    /* e.g. 1234   */
+    cstr_token_type_integer_literal_hex,    /* e.g. 0x12AB */
+    cstr_token_type_integer_literal_oct,    /* e.g. 01234  */
+    cstr_token_type_integer_literal_bin,    /* e.g. 0b1010 */
+    cstr_token_type_float_literal_dec,      /* e.g. 1.2345, 1.2345f, 1.2345d */
+    cstr_token_type_float_literal_hex,      /* e.g. 0x1.12ABp1 (exponent is mandatory). */
+    cstr_token_type_eqeq,                   /* == */
+    cstr_token_type_noteq,                  /* != */
+    cstr_token_type_lteq,                   /* <= */
+    cstr_token_type_gteq,                   /* >= */
+    cstr_token_type_andand,                 /* && */
+    cstr_token_type_oror,                   /* || */
+    cstr_token_type_plusplus,               /* ++ */
+    cstr_token_type_minusminus,             /* -- */
+    cstr_token_type_pluseq,                 /* += */
+    cstr_token_type_minuseq,                /* -= */
+    cstr_token_type_muleq,                  /* *= */
+    cstr_token_type_diveq,                  /* /= */
+    cstr_token_type_modeq,                  /* %= */
+    cstr_token_type_shleq,                  /* <<= */
+    cstr_token_type_shreq,                  /* >>= */
+    cstr_token_type_shl,                    /* << */
+    cstr_token_type_shr,                    /* >> */
+    cstr_token_type_andeq,                  /* &= */
+    cstr_token_type_oreq,                   /* |= */
+    cstr_token_type_xoreq,                  /* ^= */
+    cstr_token_type_ellipsis                /* ... */
+} cstr_token_type;
+
+typedef struct
+{
+    const char* pText;
+    size_t textLen;     /* Set to (size_t)-1 for null terminated. */
+    size_t textOff;     /* The cursor. */
+    const char* pTokenStr;
+    size_t tokenLen;
+    cstr_utf32 token;
+    size_t lineNumber;  /* One based line number. */
+    struct
+    {
+        cstr_bool32 skipWhitespace;
+        cstr_bool32 skipNewlines;
+        cstr_bool32 skipComments;
+        cstr_bool32 allowDashesInIdentifiers;
+    } options;
+} cstr_lexer;
+
+CSTR_API int cstr_lexer_init(const char* pText, size_t textLen, cstr_lexer* pLexer);
+CSTR_API int cstr_lexer_next(cstr_lexer* pLexer);
+CSTR_API int cstr_lexer_transform_string(const char* pToken, size_t tokenLen, cstr* pStr);
+CSTR_API int cstr_lexer_transform_comment(const char* pToken, size_t tokenLen, cstr* pStr);
+
+
+
+/**************************************************************************************************************************************************************
+
+Key/Value Parser
+
+**************************************************************************************************************************************************************/
+typedef struct
+{
+    cstr_lexer lexer;
+    const char* pKey;
+    size_t keyLen;
+    const char* pValue;
+    size_t valueLen;
+} cstr_keyvalue_parser;
+
+CSTR_API int cstr_keyvalue_parser_init(const char* pText, size_t textLen, cstr_keyvalue_parser* pParser);
+CSTR_API int cstr_keyvalue_parser_next(cstr_keyvalue_parser* pParser);
 
 
 #ifdef __cplusplus
@@ -1446,6 +1546,61 @@ CSTR_API cstr8 cstr8_cat(cstr8 str, const char* pOther)
     return cstr8_catn(str, pOther, utf8_strlen(pOther));
 }
 
+CSTR_API cstr8 cstr8_catv(cstr8 str, const char* pFormat, va_list args)
+{
+    va_list args2;
+    size_t  len;
+    char*   formatted;
+    cstr8   newstr;
+
+    if (pFormat == NULL) {
+        return NULL;
+    }
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    va_copy(args2, args);
+#else
+    args2 = args;
+#endif
+
+    len = cstr8_vsprintf(NULL, pFormat, args2);
+    if (len < 0) {
+        return NULL;
+    }
+
+    formatted = CSTR_MALLOC(len + 1);
+    if (formatted == NULL) {
+        return NULL;    /* Out of memory. */
+    }
+
+    cstr8_vsprintf(formatted, pFormat, args);
+
+    newstr = cstr8_catn(str, formatted, len);
+    CSTR_FREE(formatted);
+
+    if (newstr == NULL) {
+        return NULL;
+    }
+
+    va_end(args2);
+    return newstr;
+}
+
+CSTR_API cstr8 cstr8_catf(cstr8 str, const char* pFormat, ...)
+{
+    va_list args;
+
+    if (pFormat == NULL) {
+        return NULL;
+    }
+
+    va_start(args, pFormat);
+    str = cstr8_catv(str, pFormat, args);
+    va_end(args);
+
+    return str;
+}
+
 
 
 CSTR_API size_t cstr8_len(cstr8 str)
@@ -1697,6 +1852,43 @@ CSTR_API cstr8 cstr8_replace_range_tagged(cstr8 str, const char* pTagBeg, const 
     return cstr8_replace_range_ex(str, strOffsetBeg, strOffsetEnd - strOffsetBeg, pOtherSubstr, otherSubstrLen, pOtherNewLines, pOtherNewLines);
 }
 
+CSTR_API cstr8 cstr8_replace_all(cstr8 str, const char* pQuery, size_t queryLen, const char* pReplacement, size_t replacementLen)
+{
+    size_t offset = 0;
+
+    if (str == NULL || pQuery == NULL || pReplacement == NULL) {
+        return str;
+    }
+
+    if (queryLen == (size_t)-1) {
+        queryLen = utf8_strlen(pQuery);
+    }
+
+    if (replacementLen == (size_t)-1) {
+        replacementLen = utf8_strlen(pReplacement);
+    }
+
+    /* We keep looping until there's no more occurrances. */
+    for (;;) {
+        size_t location;
+
+        location = cstr8_findn(str + offset, cstr8_len(str) - offset, pQuery, queryLen);
+        if (location == cstr_npos) {
+            break;  /* We're done */
+        }
+
+        /* Getting here means we found one. We just need to replace a range. */
+        str = cstr8_replace_range(str, offset + location, queryLen, pReplacement, replacementLen);
+        if (str == NULL) {
+            return NULL;    /* Out of memory. */
+        }
+
+        offset += location + replacementLen;   /* Progress past the replacement. */
+    }
+
+    return str;
+}
+
 CSTR_API cstr8 cstr8_new_trim(const char* pOther)
 {
     if (pOther == NULL) {
@@ -1721,6 +1913,22 @@ CSTR_API cstr8 cstr8_newn_trim(const char* pOther, size_t otherLen)
     return cstr_newn(pOther + loff, roff - loff);
 }
 
+CSTR_API cstr8 cstr8_trim(cstr8 str)
+{
+    size_t loff;
+    size_t roff;
+
+    /* The length of the string will never expand which simplifies our memory management. */
+    loff = utf8_ltrim_offset(str, cstr8_len(str));
+    roff = utf8_rtrim_offset(str, cstr8_len(str));
+
+    CSTR_MOVE_MEMORY(str, str + loff, (roff - loff));   /* Left trim by moving the string down). */
+    cstr8_set_len(str, roff - loff);                    /* Set the length before the right trim. */
+    str[cstr8_get_len(str)] = '\0';                     /* Right trim by setting the null terminator. */
+
+    return str;
+}
+
 CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index)
 {
     if (str == NULL) {
@@ -1733,7 +1941,7 @@ CSTR_API cstr8 cstr8_remove_at(cstr8 str, size_t index)
     
     CSTR_MOVE_MEMORY(str + index, str + index + 1, cstr8_len(str) - index); /* This will also move the null terminator. */
     cstr8_set_len(str, cstr8_len(str) - 1);
-    
+
     return str;
 }
 #endif /* CSTR_NO_UTF8 */
@@ -4656,6 +4864,40 @@ CSTR_API cstr_bool32 utf8_is_null_or_whitespace(const cstr_utf8* pUTF8, size_t u
     return CSTR_TRUE;
 }
 
+CSTR_API size_t utf8_next_whitespace(const cstr_utf8* pUTF8, size_t utf8Len)
+{
+    size_t utf8RunningOffset = 0;
+
+    if (pUTF8 == NULL) {
+        return cstr_npos;
+    }
+
+    while (pUTF8[0] != '\0' && utf8Len > 0) {
+        cstr_utf32 utf32;
+        size_t utf8Processed;
+        int err;
+
+        err = utf8_to_utf32(&utf32, 1, NULL, pUTF8, utf8Len, &utf8Processed, 0);
+        if (err != 0 && err != ENOMEM) {
+            break;
+        }
+
+        if (utf8Processed == 0) {
+            break;
+        }
+
+        if (utf32_is_null_or_whitespace(&utf32, 1) == CSTR_TRUE) {
+            return utf8RunningOffset;
+        }
+
+        utf8RunningOffset += utf8Processed;
+        pUTF8             += utf8Processed;
+        utf8Len           -= utf8Processed;
+    }
+
+    return cstr_npos;
+}
+
 
 CSTR_API size_t utf8_ltrim_offset(const cstr_utf8* pUTF8, size_t utf8Len)
 {
@@ -4732,7 +4974,7 @@ CSTR_API size_t utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* p
     size_t thisLen = 0;
     size_t nextBeg = 0;
 
-    if (pThisLineLen == NULL) {
+    if (pThisLineLen != NULL) {
         *pThisLineLen = 0;
     }
 
@@ -4779,6 +5021,865 @@ CSTR_API size_t utf8_next_line(const cstr_utf8* pUTF8, size_t utf8Len, size_t* p
     }
 
     return nextBeg;
+}
+
+
+/**************************************************************************************************************************************************************
+
+Lexer
+
+**************************************************************************************************************************************************************/
+CSTR_API int cstr_lexer_init(const char* pText, size_t textLen, cstr_lexer* pLexer)
+{
+    if (pLexer == NULL) {
+        return EINVAL;  /* Invalid arguments. */
+    }
+
+    CSTR_ZERO_OBJECT(pLexer);
+
+    if (pText == NULL) {
+        return EINVAL;  
+    }
+
+    pLexer->pText      = pText;
+    pLexer->textLen    = textLen;
+    pLexer->textOff    = 0;
+    pLexer->lineNumber = 1;
+
+    /* We do not use the null terminator to know the end of the string so we need to calculate it now. */
+    if (pLexer->textLen == (size_t)-1) {
+        pLexer->textLen = utf8_strlen(pText);
+    }
+
+    return 0;
+}
+
+static int cstr_lexer_set_token(cstr_lexer* pLexer, cstr_utf32 token, size_t tokenLen)
+{
+    CSTR_ASSERT(pLexer != NULL);
+
+    pLexer->token     = token;
+    pLexer->pTokenStr = pLexer->pText + pLexer->textOff;
+    pLexer->tokenLen  = tokenLen;
+    pLexer->textOff  += tokenLen;
+
+    if (token == cstr_token_type_newline) {
+        pLexer->lineNumber += 1;
+    }
+
+    /* We need to parse comments and strings to find line numbers. */
+    if (token == cstr_token_type_comment || token == cstr_token_type_string_double || token == cstr_token_type_string_single) {
+        const char* pRunningStr = pLexer->pTokenStr;
+        for (;;) {
+            size_t thisLineLen;
+            size_t nextLineOff = utf8_next_line(pRunningStr, pLexer->tokenLen - (pRunningStr - pLexer->pTokenStr), &thisLineLen);
+            if (nextLineOff == thisLineLen) {
+                break;  /* Reached the end. */
+            }
+
+            pRunningStr += nextLineOff;
+            pLexer->lineNumber += 1;
+        }
+    }
+
+    return 0;
+}
+
+static int cstr_lexer_set_single_char(cstr_lexer* pLexer, cstr_utf32 c)
+{
+    return cstr_lexer_set_token(pLexer, c, 1);
+}
+
+static int cstr_lexer_set_error(cstr_lexer* pLexer, size_t tokenLen)
+{
+    cstr_lexer_set_token(pLexer, cstr_token_type_error, tokenLen);
+    return EINVAL;
+}
+
+static size_t cstr_lexer_parse_integer_suffix(cstr_lexer* pLexer, size_t off) /* Returns the new offset. */
+{
+    const char* txt;
+    size_t len;
+
+    CSTR_ASSERT(pLexer != NULL);
+
+    txt = pLexer->pText;
+    len = pLexer->textLen;
+
+    if (off < len) {
+        if (txt[off] == 'u' || txt[off] == 'U') {
+            off += 1;
+            if (off < len && (txt[off] == 'l' || txt[off] == 'L')) {
+                off += 1;
+                if (off < len && (txt[off] == 'l' || txt[off] == 'L')) {
+                    off += 1;   /* Suffix is ull/ULL. */
+                } else {
+                    /* Suffix is ul/UL. */
+                }
+            } else {
+                /* Suffix is u/U. */
+            }
+        } else if (txt[off] == 'l' || txt[off] == 'L') {
+            off += 1;
+            if (off < len && (txt[off] == 'l' || txt[off] == 'L')) {
+                off += 1;
+                if (off < len && (txt[off] == 'u' || txt[off] == 'U')) {
+                    off += 1;   /* Suffix is llu/LLU. */
+                } else {
+                    /* Suffix is ll/LL. */
+                }
+            } else if (off < len && (txt[off] == 'u' || txt[off] == 'U')) {
+                off += 1;   /* Suffix is lu/LU. */
+            } else {
+                /* Suffix is l/L. */
+            }
+        } else {
+            /* No suffix. */
+        }
+    } else {
+        /* No suffix (EOF). */
+    }
+
+    return off;
+}
+
+static size_t cstr_lexer_parse_float_suffix(cstr_lexer* pLexer, size_t off) /* Returns the new offset. */
+{
+    const char* txt;
+    size_t len;
+
+    CSTR_ASSERT(pLexer != NULL);
+
+    txt = pLexer->pText;
+    len = pLexer->textLen;
+
+    /* Supported suffixes: 'f'/'F' (float), 'd'/'D' (double) and 'l'/'L' (long double). */
+    if (off < len) {
+        if (txt[off] == 'f' || txt[off] == 'F' || txt[off] == 'd' || txt[off] == 'D' || txt[off] == 'l' || txt[off] == 'L') {
+            off += 1;
+        }
+    } else {
+        /* No suffix (EOF). */
+    }
+
+    return off;
+}
+
+static int cstr_lexer_parse_suffix_and_set_token(cstr_lexer* pLexer, cstr_utf32 token, size_t off)
+{
+    /* Get past the suffix first. */
+    if (token == cstr_token_type_float_literal_dec || token == cstr_token_type_float_literal_hex) {
+        /* Floating point suffix. */
+        off = cstr_lexer_parse_float_suffix(pLexer, off);
+    } else {
+        /* Assume an integer suffix. */
+        off = cstr_lexer_parse_integer_suffix(pLexer, off);
+    }
+
+    return cstr_lexer_set_token(pLexer, token, (off - pLexer->textOff));
+}
+
+CSTR_API int cstr_lexer_next(cstr_lexer* pLexer)
+{
+    int result;
+    const char* txt;
+    size_t off;
+    size_t len;
+
+    if (pLexer == NULL) {
+        return EINVAL;  /* Invalid arguments. */
+    }
+
+    /* We need to run this in a loop because we may be wanting to skip certain tokens such as whitespace, newlines and comments. */
+    for (;;) {
+        /*
+        When off == len, the end has been reached. The remaining number of bytes is (len - off). txt[off] is the current character. off is variable and can move forward
+        whereas len is constant and remains the same (it represents the length of the string and is required for calculating the number of bytes remaining).
+        */
+        txt = pLexer->pText;
+        off = pLexer->textOff;  /* Moves forward. */
+        len = pLexer->textLen;  /* Constant. */
+
+        if (off == len) {
+            cstr_lexer_set_token(pLexer, cstr_token_type_eof, 0);
+            return ENOMEM;  /* Out of input data. */
+        }
+
+        /* First check if we're on whitespace. */
+        {
+            size_t whitespaceLen = utf8_ltrim_offset(txt + off, (len - off));
+            if (whitespaceLen > 0) {
+                /* It's whitespace. Our lexer makes a distrinction between whitespace and new line characters so we need to check that too. */
+                size_t thisLineLen;
+                size_t nextLineOff = utf8_next_line(txt + off, (len - off), &thisLineLen);
+                if (thisLineLen > whitespaceLen) {
+                    /* There's no new line character within the whitespace area. */
+                    result = cstr_lexer_set_token(pLexer, cstr_token_type_whitespace, whitespaceLen);
+                    if (pLexer->options.skipWhitespace) {
+                        continue;
+                    } else {
+                        return result;
+                    }
+                } else {
+                    if (thisLineLen <= whitespaceLen) {
+                        /* There's a new line character within the whitespace area. */
+                        result = cstr_lexer_set_token(pLexer, cstr_token_type_whitespace, whitespaceLen);
+                        if (pLexer->options.skipWhitespace) {
+                            continue;
+                        } else {
+                            return result;
+                        }
+                    } else {
+                        CSTR_ASSERT(thisLineLen == 0);
+                        result = cstr_lexer_set_token(pLexer, cstr_token_type_newline, (nextLineOff - thisLineLen));
+                        if (pLexer->options.skipNewlines) {
+                            continue;
+                        } else {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+
+        /* It's not whitespace or a new line. */
+        if (txt[off] == '/') {
+            /* Might be an opening comment. */
+            if (((off+1) < len) && txt[off+1] == '*') {
+                /* It's a block comment. We need to include  */
+                size_t tokenLen;
+            
+                off += 2;
+                tokenLen = cstr8_findn(txt + off, (len - off), "*/", 2);
+                if (tokenLen == cstr_npos) {
+                    /* The closing token could not be found. Treat the entire rest of the file as a comment. */
+                    result = cstr_lexer_set_token(pLexer, cstr_token_type_comment, (len - off) + 2);  /* +2 for the opening. */
+                } else {
+                    /* We found the closing token. */
+                    result = cstr_lexer_set_token(pLexer, cstr_token_type_comment, tokenLen + 4);     /* +2 for the opening, +2 for the closing. */
+                }
+
+                if (pLexer->options.skipComments) {
+                    continue;
+                } else {
+                    return result;
+                }
+            } else if ((off+1 < len) && txt[off+1] == '/') {
+                /* It's a line comment. Note that we do *not* include the new line in the returned token. */
+                size_t thisLineLen;
+            
+                off += 2;
+                utf8_next_line(txt + off, (len - off), &thisLineLen);
+                result = cstr_lexer_set_token(pLexer, cstr_token_type_comment, thisLineLen + 2);      /* +2 for the opening. */
+                if (pLexer->options.skipComments) {
+                    continue;
+                } else {
+                    return result;
+                }
+            } else {
+                /* It's just a general token. */
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            }
+        }
+
+        /* It's not whitespace, new line nor a comment. Check if it's a string. We support both double and single quoted strings. */
+        if (txt[off] == '\"') {
+            off += 1;
+            for (; off < len; off += 1) {
+                if (txt[off] == '\"') {
+                    /* Could be the end of the string. Need to check that this double-quote is escaped. If so we continue, otherwise we have reached the end. */
+                    CSTR_ASSERT(off > 0);
+                    if (txt[off-1] != '\\') {
+                        /* It's not an escaped double quote which means we've reached the end. */
+                        off += 1;
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_string_double, (off - pLexer->textOff));
+                    }
+                }
+            }
+        }
+
+        if (txt[off] == '\'') {
+            off += 1;
+            for (; off < len; off += 1) {
+                if (txt[off] == '\'') {
+                    /* Could be the end of the string. Need to check that this double-quote is escaped. If so we continue, otherwise we have reached the end. */
+                    CSTR_ASSERT(off > 0);
+                    if (txt[off-1] != '\\') {
+                        /* It's not an escaped double quote which means we've reached the end. */
+                        off += 1;
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_string_double, (off - pLexer->textOff));
+                    }
+                }
+            }
+        }
+
+        /* It's not whitespace, new line, comment, nor a string. Check if it's a number. Using a switch here so we can do a convenient fall-through for handling the 0 special case. */
+        switch (txt[off]) {
+            case '0':
+            {
+                size_t tokenBeg = off;  /* <-- Will be used to calculate the length of the token. */
+
+                if ((off+1) < len) {
+                    if (txt[off+1] == 'x' || txt[off+1] == 'X') {
+                        /* Hex integer or float literal. If we find a '.', 'p' or 'P' it means we're looking at a floating-point literal. */
+                        off += 2;   /* +1 for the '0' and +1 for the 'x/X'. */
+                        while (off < len && ((txt[off] >= '0' && txt[off] <= '9') || (txt[off] >= 'a' && txt[off] <= 'f') || (txt[off] >= 'A' && txt[off] <= 'F'))) {
+                            off += 1;
+                        }
+
+                        if (txt[off] == '.') {
+                            off += 1;
+                            while (off < len && ((txt[off] >= '0' && txt[off] <= '9') || (txt[off] >= 'a' && txt[off] <= 'f') || (txt[off] >= 'A' && txt[off] <= 'F'))) {
+                                off += 1;
+                            }
+                        }
+
+                        /* If our next character is an 'p' or 'P' it means we're using scientific notation. */
+                        if (txt[off] == 'p' || txt[off] == 'P') {
+                            /* Scientific notation. */
+                            off += 1;
+                            if (off < len && (txt[off] == '-' || txt[off] == '+')) {
+                                off += 1;
+                            }
+
+                            /* We must have at least one digit. */
+                            if ((txt[off] >= '0' && txt[off] <= '9') || (txt[off] >= 'a' && txt[off] <= 'f') || (txt[off] >= 'A' && txt[off] <= 'F')) {
+                                off += 1;
+                            } else {
+                                /* Invalid float literal. */
+                                return cstr_lexer_set_error(pLexer, (off - tokenBeg));
+                            }
+
+                            /* Now we just need to go until we hit the last digit. */
+                            while (off < len && ((txt[off] >= '0' && txt[off] <= '9') || (txt[off] >= 'a' && txt[off] <= 'f') || (txt[off] >= 'A' && txt[off] <= 'F'))) {
+                                off += 1;
+                            }
+                        }
+
+                        /* We've reached the end of the literal. Check for a suffix and set the token. */
+                        return cstr_lexer_parse_suffix_and_set_token(pLexer, cstr_token_type_float_literal_hex, off);
+                    } else if (txt[off+1] == 'b' || txt[off+1] == 'B') {
+                        /* Binary literal. */
+                        off += 2;   /* +1 for '0' and +1 for 'b/B'. */
+                        while (off < len && (txt[off] >= '0' && txt[off] <= '1')) {
+                            off += 1;
+                        }
+
+                        /* We've reached the end of the literal. */
+                        return cstr_lexer_parse_suffix_and_set_token(pLexer, cstr_token_type_integer_literal_bin, off);
+                    } else {
+                        /* Maybe an octal literal, but could also just be a float starting with 0. If it's float we fall through to the next case statement which will treat it as decimal. */
+                        size_t newOff = off+1;
+
+                        /* First get past all leading zeros. */
+                        while (newOff < len && txt[newOff] == '0') {
+                            newOff += 1;
+                        }
+
+                        /* If the next character is between 1 and 7 it means we have an octal constant. Otherwise we need to fall through and treat it as a decimal literal. */
+                        if (txt[newOff] >= '1' && txt[newOff] <= '7') {
+                            /* It's an octal integer literal. */
+                            off = newOff;
+                            while (off < len && (txt[off] >= '0' && txt[off] <= '7')) {
+                                off += 1;
+                            }
+
+                            /* We've reached the end of the literal. */
+                            return cstr_lexer_parse_suffix_and_set_token(pLexer, cstr_token_type_integer_literal_oct, off);
+                        } else {
+                            /* It's not an octal literal. Just fall through and treat it as a decimal literal. Note that we have not incremented 'off' at this point. */
+                        }
+                    }
+                }
+            } /* fallthrough */;
+
+            case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+            {
+                /* Decimal integer or float literal. We keep looping until we find something that's not a number. If it is a '.', 'e' or 'E' it means we're looking at a floating-point literal. */
+                size_t tokenBeg = off;  /* <-- Will be used to calculate the length of the token. */
+                off += 1;
+                while (off < len && (txt[off] >= '0' && txt[off] <= '9')) {
+                    off += 1;
+                }
+
+                /* Not a digit. If it's a dot it means we're processing a floating point literal. */
+                if (txt[off] == '.' || txt[off] == 'e' || txt[off] == 'E') {
+                    /* It's a floating point literal. We need to do another digit iteration. */
+                    if (txt[off] == '.') {
+                        off += 1;
+                        while (off < len && (txt[off] >= '0' && txt[off] <= '9')) {
+                            off += 1;
+                        }
+                    }
+
+                    /* If our next character is an 'e' or 'E' it means we're using scientific notation. */
+                    if (txt[off] == 'e' || txt[off] == 'E') {
+                        /* Scientific notation. */
+                        off += 1;
+                        if (off < len && (txt[off] == '-' || txt[off] == '+')) {
+                            off += 1;
+                        }
+
+                        /* We must have at least one digit. */
+                        if (txt[off] >= '0' && txt[off] <= '9') {
+                            off += 1;
+                        } else {
+                            /* Invalid float literal. */
+                            return cstr_lexer_set_error(pLexer, (off - tokenBeg));
+                        }
+
+                        /* Now we just need to go until we hit the last digit. */
+                        while (off < len && (txt[off] >= '0' && txt[off] <= '9')) {
+                            off += 1;
+                        }
+                    }
+
+                    /* We've reached the end of the literal. Check for a suffix and set the token. */
+                    return cstr_lexer_parse_suffix_and_set_token(pLexer, cstr_token_type_float_literal_dec, off);
+                } else {
+                    /* It's a decimal integer literal. Check fo a suffix and set the token. */
+                    return cstr_lexer_parse_suffix_and_set_token(pLexer, cstr_token_type_integer_literal_dec, off);
+                }
+            } break;
+
+            case '=':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_eqeq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '!':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_noteq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '<':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_lteq, 2);
+                    }
+                    if (txt[off+1] == '<') {
+                        if (off+2 < len) {
+                            if (txt[off+2] == '=') {
+                                return cstr_lexer_set_token(pLexer, cstr_token_type_shleq, 3);
+                            }
+                        }
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_shl, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '>':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_gteq, 2);
+                    }
+                    if (txt[off+1] == '>') {
+                        if (off+2 < len) {
+                            if (txt[off+2] == '=') {
+                                return cstr_lexer_set_token(pLexer, cstr_token_type_shreq, 3);
+                            }
+                        }
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_shr, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '&':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '&') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_andand, 2);
+                    }
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_andeq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '|':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '|') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_oror, 2);
+                    }
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_oreq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '+':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '+') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_plusplus, 2);
+                    }
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_pluseq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '-':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '-') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_minusminus, 2);
+                    }
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_minuseq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '*':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_muleq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '/':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_diveq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);   /* Should never hit this because the '/' character is handled when handling comments. */
+            };
+
+            case '%':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_modeq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '^':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == '=') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_xoreq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case '.':
+            {
+                if (off+2 < len) {
+                    if(txt[off+1] == '.' && txt[off+2] == '.') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_ellipsis, 3);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            /*
+            By default we must have an identifier. In our lexer, all special operators are represented using ASCII characters. This means we can use *most* Unicode code points
+            in our identifiers. What we cannot use, however, is any of the Unicode defined whitespace characters (these encompass new line characters). We know that it won't
+            start with a whitespace character because we checked that at the top. However, we need to make sure we don't include any Unicode whitespace characters.
+            */
+            default:
+            {
+                /* We just need to loop until we hit the first disallowed character. We support "_", "a-z", "A-Z", "0-9" and all Unicode characters outside of ASCII except whitespace. */
+                if ((txt[off] >= 'a' && txt[off] <= 'z') ||
+                    (txt[off] >= 'A' && txt[off] <= 'Z') ||
+                    (txt[off] == '_')                    ||
+                    (txt[off] >= 0x80)) {
+                    size_t tokenMaxLen = utf8_next_whitespace(txt + off, (len - off));   /* <-- We'll be using this to ensure we don't include any Unicode whitespace characters. */
+                    size_t tokenLen = 0;
+
+                    while (tokenLen < (len - off)) {
+                        tokenLen += 1;
+                        if (tokenLen == tokenMaxLen) {
+                            break;
+                        }
+
+                        if ((txt[off+tokenLen] >= 'a' && txt[off+tokenLen] <= 'z')                 ||
+                            (txt[off+tokenLen] >= 'A' && txt[off+tokenLen] <= 'Z')                 ||
+                            (txt[off+tokenLen] >= '0' && txt[off+tokenLen] <= '9')                 ||
+                            (txt[off+tokenLen] == '_')                                             ||
+                            (txt[off+tokenLen] == '-' && pLexer->options.allowDashesInIdentifiers) ||   /* Enables support for kabab-case. */
+                            (txt[off+tokenLen] >= 0x80)) {
+                            continue;   /* Still valid. */
+                        } else {
+                            break;      /* Not a valid character for an identifier. We're done. */
+                        }
+                    }
+
+                    return cstr_lexer_set_token(pLexer, cstr_token_type_identifier, tokenLen);
+                } else {
+                    return cstr_lexer_set_single_char(pLexer, txt[off]);
+                }
+            };
+        }
+    }
+
+    /* Shouldn't get here. */
+    /*return 0;*/
+}
+
+CSTR_API int cstr_lexer_transform_string(const char* pToken, size_t tokenLen, cstr* pStr)
+{
+    cstr str = NULL;
+
+    if (pStr == NULL) {
+        return EINVAL;
+    }
+
+    *pStr = NULL;
+
+    if (pToken == NULL || pStr == NULL) {
+        return EINVAL;
+    }
+
+    /* We need to remove the surrounding quotes. */
+    if (pToken[0] == '\"' || pToken[0] == '\'' && tokenLen >= 2) {
+        str = cstr_newn(pToken + 1, tokenLen - 2);
+    } else {
+        str = cstr_newn(pToken, tokenLen);
+    }
+
+    if (str == NULL) {
+        return ENOMEM;
+    }
+
+
+    /*
+    From here on we won't ever be making the string smaller. We can therefore do an efficient iteration with the assumption that we won't ever need to expand. We need
+    to transform the following:
+
+        \\r -> \r
+        \\n -> \n
+        \\t -> \t
+        \\f -> \f
+        \\" -> \"
+        \\' -> \'
+        \\\ -> \\
+        \\0 -> \0
+    */
+    {
+        size_t i = 0;
+        while (i < cstr_len(str)) {
+            if (str[i] == '\\' && i+1 < cstr_len(str)) {
+                if (str[i+1] == '\r' ||
+                    str[i+1] == '\n' ||
+                    str[i+1] == '\t' ||
+                    str[i+1] == '\f' ||
+                    str[i+1] == '\"' ||
+                    str[i+1] == '\'' ||
+                    str[i+1] == '\\' ||
+                    str[i+1] == '\0') {
+                    cstr8_remove_at(str, i);
+                    continue;   /* Continue without incrementing the counter. */
+                }
+            }
+
+            i += 1;
+        }
+    }
+
+    /* TODO: Handle unicode constants with '\u'. */
+    /* TODO: Handle hex constants with '\x'. */
+    /* TODO: Handle octal constants with '\0[0..7]'. */
+
+    /* We're done. */
+    *pStr = str;
+    return 0;
+}
+
+CSTR_API int cstr_lexer_transform_comment(const char* pToken, size_t tokenLen, cstr* pStr)
+{
+    cstr str = NULL;
+
+    if (pStr == NULL) {
+        return EINVAL;
+    }
+
+    *pStr = NULL;
+
+    if (pToken == NULL || pStr == NULL) {
+        return EINVAL;
+    }
+
+    /* We need to remove the surrounding comment tokens. */
+    if (pToken[0] == '/') {
+        if (pToken[1] == '/') {
+            /* Line comment. */
+            str = cstr_newn(pToken + 2, tokenLen - 2);
+        } else if (pToken[1] == '*' && tokenLen >= 4) {
+            /* Block comment. */
+            str = cstr_newn(pToken + 2, tokenLen - 4);
+        }
+    } else {
+        str = cstr_newn(pToken, tokenLen);
+    }
+
+    if (str == NULL) {
+        return ENOMEM;
+    }
+
+    /* We're done. */
+    *pStr = str;
+    return 0;
+}
+
+
+/**************************************************************************************************************************************************************
+
+Key/Value Parser
+
+**************************************************************************************************************************************************************/
+CSTR_API int cstr_keyvalue_parser_init(const char* pText, size_t textLen, cstr_keyvalue_parser* pParser)
+{
+    int result;
+
+    if (pParser == NULL) {
+        return EINVAL;  /* Invalid arguments. */
+    }
+
+    CSTR_ZERO_OBJECT(pParser);
+
+    result = cstr_lexer_init(pText, textLen, &pParser->lexer);
+    if (result != 0) {
+        return result;  /* Failed to initialize the lexer. */
+    }
+
+    pParser->lexer.options.allowDashesInIdentifiers = CSTR_TRUE;    /* Enables kabab-case. */
+
+    return 0;
+}
+
+CSTR_API int cstr_keyvalue_parser_next(cstr_keyvalue_parser* pParser)
+{
+    int result;
+    const char* pKey = NULL;
+    size_t keyLen = 0;
+    const char* pVal = NULL;
+    size_t valLen = 0;
+
+    if (pParser == NULL) {
+        return EINVAL;
+    }
+
+    /* Extract the key. */
+    for (;;) {
+        result = cstr_lexer_next(&pParser->lexer);
+        if (result != 0) {
+            return result;  /* Probably reached the end. */
+        }
+
+        /* The key needs to be an identifier or a string. If it's not we just skip it and try again. */
+        switch (pParser->lexer.token) {
+            case cstr_token_type_identifier:
+            case cstr_token_type_string_double:
+            case cstr_token_type_string_single:
+            {
+                pKey   = pParser->lexer.pTokenStr;
+                keyLen = pParser->lexer.tokenLen;
+            } break;
+
+            /* Whitespace, newline and comment tokens are allowed. These are just skipped. */
+            case cstr_token_type_whitespace:
+            case cstr_token_type_newline:
+            case cstr_token_type_comment:
+            {
+                /* Do nothing and continue. */
+            } continue;
+
+            default:
+            {
+                /* The ';' token is allowed. This is just a statement terminator. */
+                if (pParser->lexer.token == ';') {
+                    continue;
+                }
+
+                /* Getting here means we have a syntax error. */
+                /* TODO: Post an error. */
+                return EINVAL;
+            };
+        }
+
+        if (pKey != NULL) {
+            break;
+        }
+    }
+
+    /* Getting here means we should have a key. Now we need to extract the value. */
+    for (;;) {
+        result = cstr_lexer_next(&pParser->lexer);
+        if (result != 0) {
+            return result;  /* Probably reached the end. */
+        }
+
+        switch (pParser->lexer.token) {
+            case cstr_token_type_identifier:
+            case cstr_token_type_string_double:
+            case cstr_token_type_string_single:
+            {
+                pVal   = pParser->lexer.pTokenStr;
+                valLen = pParser->lexer.tokenLen;
+            } break;
+
+            /* Whitespace, newline and comments can be ignored. */
+            case cstr_token_type_whitespace:
+            case cstr_token_type_newline:
+            case cstr_token_type_comment:
+            {
+                /* Do nothing and continue. */
+            } continue;
+
+            default:
+            {
+                /* We can allow an "=" sign for those who prefer an explicit assignment operator. This is optional in our key/value parser as whitespace gives enough context. */
+                if (pParser->lexer.token == '=') {
+                    continue;
+                }
+
+                /* Getting here means we have a syntax error. */
+                /* TODO: Post an error. */
+                return EINVAL;
+            };
+        }
+
+        if (pVal != NULL) {
+            break;
+        }
+    }
+
+    /* If we get here we should have both a key and a value. We can now set the members of pParser and return. */
+    pParser->pKey     = pKey;
+    pParser->keyLen   = keyLen;
+    pParser->pValue   = pVal;
+    pParser->valueLen = valLen;
+
+    return 0;
 }
 
 #endif  /* libcstr_c */
