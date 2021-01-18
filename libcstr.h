@@ -1354,7 +1354,7 @@ CSTR_API cstr8 cstr8_alloc(size_t len)
 {
     char* str;
 
-    str = CSTR_CALLOC(cstr8_allocation_size(len));
+    str = (char*)CSTR_CALLOC(cstr8_allocation_size(len));
     if (str == NULL) {
         return NULL;    /* Out of memory. */
     }
@@ -1568,7 +1568,7 @@ CSTR_API cstr8 cstr8_catv(cstr8 str, const char* pFormat, va_list args)
         return NULL;
     }
 
-    formatted = CSTR_MALLOC(len + 1);
+    formatted = (char*)CSTR_MALLOC(len + 1);
     if (formatted == NULL) {
         return NULL;    /* Out of memory. */
     }
