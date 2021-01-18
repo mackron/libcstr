@@ -751,7 +751,7 @@ IMPLEMENTATION
 ************************************************************************************************************************************************************/
 #if defined(LIBCSTR_IMPLEMENTATION)
 #ifndef libcstr_c
-#define libcstr_h
+#define libcstr_c
 
 /* CPU Architecture */
 #if defined(__x86_64__) || defined(_M_X64)
