@@ -148,6 +148,29 @@ typedef cstr_uint16 cstr_utf16;
 typedef cstr_uint32 cstr_utf32;
 
 
+/* We need to know the size of the wchar_t type at compile time so we know how to convert between it. */
+#if defined(__SIZEOF_WCHAR_T__)
+    #define CSTR_SIZEOF_WCHAR_T __SIZEOF_WCHAR_T__
+#else
+    #if defined(__WCHAR_MAX__)
+        #if __WCHAR_MAX__ > 0xFFFF
+            #define CSTR_SIZEOF_WCHAR_T 4
+        #else
+            #define CSTR_SIZEOF_WCHAR_T 2
+        #endif
+    #else
+        /* Fall back to platform-specific defines. */
+        #if defined(_WIN32)         /* Win32 is known to be 2 bytes. */
+            #define CSTR_SIZEOF_WCHAR_T 2
+        #elif defined(__linux__)    /* Linux is known to be 4 bytes. */
+            #define CSTR_SIZEOF_WCHAR_T 4
+        #else                       /* Fall back to 4 bytes. Expand this for additional platforms. */
+            #define CSTR_SIZEOF_WCHAR_T 4
+        #endif
+    #endif
+#endif
+
+
 /* Define NULL for some compilers. */
 #ifndef NULL
 #define NULL 0
@@ -573,6 +596,9 @@ CSTR_API errno_t utf8_to_utf32ne(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pU
 CSTR_API errno_t utf8_to_utf32le(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
 CSTR_API errno_t utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
 static CSTR_INLINE errno_t utf8_to_utf32(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pUTF32Len, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags) { return utf8_to_utf32ne(pUTF32, utf32Cap, pUTF32Len, pUTF8, utf8Len, pUTF8LenProcessed, flags); }
+
+CSTR_API errno_t utf8_to_wchar_len(size_t* pWCHARLen, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
+CSTR_API errno_t utf8_to_wchar(wchar_t* pWCHAR, size_t wcharCap, size_t* pWCHARLen, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags);
 
 
 /* UTF-16 */
@@ -3081,6 +3107,24 @@ CSTR_API errno_t utf8_to_utf32be(cstr_utf32* pUTF32, size_t utf32Cap, size_t* pU
     }
 
     return CSTR_SUCCESS;
+}
+
+CSTR_API errno_t utf8_to_wchar_len(size_t* pWCHARLen, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+{
+#if CSTR_SIZEOF_WCHAR_T == 2
+    return utf8_to_utf16_len(pWCHARLen, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+#else
+    return utf8_to_utf32_len(pWCHARLen, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+#endif
+}
+
+CSTR_API errno_t utf8_to_wchar(wchar_t* pWCHAR, size_t wcharCap, size_t* pWCHARLen, const cstr_utf8* pUTF8, size_t utf8Len, size_t* pUTF8LenProcessed, cstr_uint32 flags)
+{
+#if CSTR_SIZEOF_WCHAR_T == 2
+    return utf8_to_utf16((cstr_utf16*)pWCHAR, wcharCap, pWCHARLen, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+#else
+    return utf8_to_utf32((cstr_utf32*)pWCHAR, wcharCap, pWCHARLen, pUTF8, utf8Len, pUTF8LenProcessed, flags);
+#endif
 }
 
 
