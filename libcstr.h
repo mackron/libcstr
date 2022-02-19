@@ -716,6 +716,7 @@ typedef enum
     cstr_token_type_andeq,                  /* &= */
     cstr_token_type_oreq,                   /* |= */
     cstr_token_type_xoreq,                  /* ^= */
+    cstr_token_type_coloncolon,             /* :: */
     cstr_token_type_ellipsis                /* ... */
 } cstr_token_type;
 
@@ -5629,6 +5630,16 @@ CSTR_API int cstr_lexer_next(cstr_lexer* pLexer)
                 if (off+1 < len) {
                     if (txt[off+1] == '=') {
                         return cstr_lexer_set_token(pLexer, cstr_token_type_xoreq, 2);
+                    }
+                }
+                return cstr_lexer_set_single_char(pLexer, txt[off]);
+            };
+
+            case ':':
+            {
+                if (off+1 < len) {
+                    if (txt[off+1] == ':') {
+                        return cstr_lexer_set_token(pLexer, cstr_token_type_coloncolon, 2);
                     }
                 }
                 return cstr_lexer_set_single_char(pLexer, txt[off]);
